@@ -79,7 +79,10 @@ public class TelegramMessageServiceImpl extends TelegramLongPollingBot implement
         switch (text) {
 
             case TelegramCommands.START:
-                sendMessage(ToUserUtils.getRequestLocationButtonMessage(userID, "Share Location", "Welcome to here. I am a robot that is used to send daily messages to provide convince for your life. If you want more features, I sincerely invite you to become my subscriber.\nMy service is based on your location. So, to subcribe me, please share your location"));
+                sendMessage(ToUserUtils.getRequestLocationButtonMessage(userID, "Share Location", "🎉Welcome to here."));
+                sendMessage(ToUserUtils.getTextMessage(userID, "I am a robot that is used to send daily messages to provide convince for your life."));
+                sendMessage(ToUserUtils.getTextMessage(userID, "If you want more features, I sincerely invite you to become my subscriber."));
+                sendMessage(ToUserUtils.getTextMessage(userID, "My service is based on your location. So, to subcribe me, please share your location"));
                 break;
 
             case TelegramCommands.SUBSCRIBE:
@@ -90,13 +93,18 @@ public class TelegramMessageServiceImpl extends TelegramLongPollingBot implement
                 }
                 break;
 
+            case TelegramCommands.UNSUBSCRIBE:
+                subcribeList.remove(userID);
+                sendMessage(ToUserUtils.getTextMessage(userID, "\uD83D\uDE41Subscription cancelled"));
+                break;
+
             case TelegramCommands.HELP:
                 sendMessage(ToUserUtils.getTextMessage(message.getChatId(), "This is for help command"));
                 break;
 
             case TelegramCommands.WEATHER:
                 Subscriber subscriber = subcribeList.get(message.getChatId());
-                sendMessage(ToUserUtils.getTextMessage(userID, "🎉Congratulation!! Weather service activated"));
+                sendMessage(ToUserUtils.getTextMessage(userID, "🎉Weather service activated"));
                 subscriber.setWeatherService(true);
                 break;
 
@@ -111,9 +119,9 @@ public class TelegramMessageServiceImpl extends TelegramLongPollingBot implement
         Long userID = message.getChatId();
         Subscriber user = subcribeList.get(userID);
 
-        String feedbackMessage = "🎉 Thanks!! Your location updated";
+        String feedbackMessage = "🎉Thanks!! Your location updated";
         if (user == null) {
-            feedbackMessage = "🎉 Congratulation, You have successfully subscribed to the daily Message.\\nUse /help to to edit the content of your daily message";
+            feedbackMessage = "🎉You have successfully subscribed to the daily Message.\n\uD83D\uDDD2Check the command menu to edit your daily message";
             user = new Subscriber();
             user.setId(userID);
             subcribeList.put(userID, user);
