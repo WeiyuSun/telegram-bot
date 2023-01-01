@@ -10,4 +10,8 @@ public class Subscriber {
     private Double latitude;
     private String newsPreference;
     private static String dailyQuote;
+
+    private boolean weatherService;
+    private boolean quoteService;
+    private boolean newsService;
 }
