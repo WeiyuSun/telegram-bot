@@ -34,7 +34,8 @@ public class OpenWeatherApi {
 
     public String getCity(Double latitude, Double longitude) {
         JSONObject[] result = restTemplate.getForObject(cityUrl, JSONObject[].class, latitude, longitude);
-        System.out.println(result[0]);
+        System.out.println(
+                result[0]);
         return result[0].getString("name");
     }
 }

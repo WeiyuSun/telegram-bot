@@ -2,6 +2,8 @@ package com.weiyuproject.telegrambot.entity;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class Subscriber {
     private Long id;
@@ -14,4 +16,10 @@ public class Subscriber {
     private boolean weatherService;
     private boolean quoteService;
     private boolean newsService;
+    private boolean scheduleService;
+
+    private List<OneTimeEvent> oneTimeEvents;
+    private List<WeeklyEvent> weeklyEvents;
+    private List<MonthlyEvent> monthlyEvents;
+    private List<Anniversary> anniversaries;
 }

@@ -2,6 +2,8 @@ package com.weiyuproject.telegrambot.service;
 
 import com.weiyuproject.telegrambot.entity.Subscriber;
 
+import java.util.List;
+
 public interface DailyMessageService {
-     String getDailyMessage(Subscriber subscriber);
+     List<String> getDailyMessages(Subscriber subscriber);
 }
