@@ -1,10 +1,7 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
 import com.weiyuproject.telegrambot.entity.Subscriber;
-import com.weiyuproject.telegrambot.service.DailyMessageService;
-import com.weiyuproject.telegrambot.service.MessageService;
-import com.weiyuproject.telegrambot.service.ReceiveAndSendService;
-import com.weiyuproject.telegrambot.service.SubscriberService;
+import com.weiyuproject.telegrambot.service.*;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -31,18 +29,25 @@ public class ReceiveAndSendServiceImpl extends TelegramLongPollingBot implements
     @Autowired
     private MessageService messageService;
     @Autowired
+    private CallbackQueryService callbackQueryService;
+    @Autowired
     private DailyMessageService dailyMessageService;
 
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             messageService.processMessageFromTelegram(update.getMessage());
+        } else if (update.hasCallbackQuery()) {
+            callbackQueryService.processCallbackQuery(update.getCallbackQuery());
         }
     }
 
-    public void sendMessage(SendMessage sendMessage) {
+    public void sendMessage(Object sendMessage) {
         try {
-            execute(sendMessage);
+            if (sendMessage instanceof SendMessage)
+                execute((SendMessage) sendMessage);
+            else if (sendMessage instanceof EditMessageReplyMarkup)
+                execute((EditMessageReplyMarkup) sendMessage);
         } catch (Exception e) {
             e.printStackTrace();
         }
