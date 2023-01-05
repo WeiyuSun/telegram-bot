@@ -1,53 +1,44 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
+import com.weiyuproject.telegrambot.entity.DailyMessageBot;
 import com.weiyuproject.telegrambot.entity.Subscriber;
 import com.weiyuproject.telegrambot.service.*;
+import com.weiyuproject.telegrambot.utils.TelegramCommands;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.*;
 
 @Service
-public class ReceiveAndSendServiceImpl extends TelegramLongPollingBot implements ReceiveAndSendService {
-    @Value("${telegram.config.botUsername}")
-    private String botUsername;
-    @Value("${telegram.config.accessToken}")
-    private String accessToken;
-    @Autowired
-    private SubscriberService subscriberService;
-    @Autowired
-    private MessageService messageService;
-    @Autowired
-    private CallbackQueryService callbackQueryService;
-    @Autowired
-    private DailyMessageService dailyMessageService;
+public class ReceiveAndSendServiceImpl implements ReceiveAndSendService {
+    @Autowired private SubscriberService subscriberService;
+    @Autowired private MessageService messageService;
+    @Autowired private CallbackQueryService callbackQueryService;
+    @Autowired private DailyMessageService dailyMessageService;
+    @Autowired private DailyMessageBot dailyMessageBot;
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public void processUpdateFromTelegram(Update update) {
+        System.out.println("get update: " + update);
         if (update.hasMessage()) {
+            System.out.println("hello!");
             messageService.processMessageFromTelegram(update.getMessage());
         } else if (update.hasCallbackQuery()) {
             callbackQueryService.processCallbackQuery(update.getCallbackQuery());
         }
     }
 
-    public void sendMessage(Object sendMessage) {
+    public void sendMessageToTelegram(Object sendMessage) {
         try {
             if (sendMessage instanceof SendMessage)
-                execute((SendMessage) sendMessage);
+                dailyMessageBot.execute((SendMessage) sendMessage);
             else if (sendMessage instanceof EditMessageReplyMarkup)
-                execute((EditMessageReplyMarkup) sendMessage);
+                dailyMessageBot.execute((EditMessageReplyMarkup) sendMessage);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,13 +47,13 @@ public class ReceiveAndSendServiceImpl extends TelegramLongPollingBot implements
     /**
      * send message to all subscribers
      */
-    public void sendDailyMessage() {
+    public void sendDailyMessageToTelegram() {
         Map<Long, Subscriber> subscriberList = subscriberService.getSubscriberList();
         subscriberList.forEach((chatID, subscriber) -> {
             List<String> todayMessages = dailyMessageService.getDailyMessages(subscriber);
 
             for (String message : todayMessages) {
-                sendMessage(ToUserUtils.getTextMessage(chatID, message));
+                sendMessageToTelegram(ToUserUtils.getTextMessage(chatID, message));
             }
         });
     }
@@ -70,33 +61,13 @@ public class ReceiveAndSendServiceImpl extends TelegramLongPollingBot implements
     /**
      * send message to given subscribers
      */
-    public void sendDailyMessage(List<Subscriber> subscribers) {
+    public void sendDailyMessageToTelegram(List<Subscriber> subscribers) {
         for (Subscriber subscriber : subscribers) {
             List<String> todayMessages = dailyMessageService.getDailyMessages(subscriber);
 
             for (String message : todayMessages) {
-                sendMessage(ToUserUtils.getTextMessage(subscriber.getId(), message));
+                sendMessageToTelegram(ToUserUtils.getTextMessage(subscriber.getId(), message));
             }
-        }
-    }
-
-    @Override
-    public String getBotUsername() {
-        return botUsername;
-    }
-
-    @Override
-    public String getBotToken() {
-        return accessToken;
-    }
-
-    @PostConstruct
-    public void botRegistration() {
-        try {
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot(this);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
         }
     }
 }

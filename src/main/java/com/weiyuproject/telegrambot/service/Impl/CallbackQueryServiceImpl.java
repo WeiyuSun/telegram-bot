@@ -47,32 +47,7 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
 
             markupInline.setKeyboard(inlineRows);
             editMessageReplyMarkup.setReplyMarkup(markupInline);
-
-//            SendMessage sendMessage = new SendMessage(); // Create a message object object
-//            sendMessage.setChatId(userID);
-//            sendMessage.setText("select a number");
-//            InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-//            List<List<InlineKeyboardButton>> inlineRows = new ArrayList<>();
-//
-//            List<InlineKeyboardButton> addNumberRow = new ArrayList<>();
-//            InlineKeyboardButton addNumberButton = new InlineKeyboardButton();
-//            addNumberButton.setText("add a number");
-//            addNumberButton.setCallbackData("add a number");
-//            addNumberRow.add(addNumberButton);
-//
-//            List<InlineKeyboardButton> numberRow = new ArrayList<>();
-//            InlineKeyboardButton numberButton = new InlineKeyboardButton();
-//            numberButton.setText("1");
-//            numberButton.setCallbackData("1");
-//            numberRow.add(numberButton);
-//            // Set the keyboard to the markup
-//            inlineRows.add(addNumberRow);
-//            inlineRows.add(numberRow);
-//            // Add it to the message
-//            markupInline.setKeyboard(inlineRows);
-//            sendMessage.setReplyMarkup(markupInline);
-
-            receiveAndSendService.sendMessage(editMessageReplyMarkup);
+            receiveAndSendService.sendMessageToTelegram(editMessageReplyMarkup);
         }
     }
 }

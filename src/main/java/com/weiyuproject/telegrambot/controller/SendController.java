@@ -21,6 +21,6 @@ public class SendController {
     public void sendDailyMessage() {
         System.out.println("sending...");
         tianxingApi.getQuoteFromUrl();
-        receiveAndSendService.sendDailyMessage();
+        receiveAndSendService.sendDailyMessageToTelegram();
     }
 }
