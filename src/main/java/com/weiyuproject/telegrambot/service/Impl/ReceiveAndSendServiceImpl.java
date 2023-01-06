@@ -5,6 +5,7 @@ import com.weiyuproject.telegrambot.entity.Subscriber;
 import com.weiyuproject.telegrambot.service.*;
 import com.weiyuproject.telegrambot.utils.TelegramCommands;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
+import com.weiyuproject.telegrambot.utils.UserStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -16,18 +17,23 @@ import java.util.*;
 
 @Service
 public class ReceiveAndSendServiceImpl implements ReceiveAndSendService {
-    @Autowired private SubscriberService subscriberService;
-    @Autowired private MessageService messageService;
-    @Autowired private CallbackQueryService callbackQueryService;
-    @Autowired private DailyMessageService dailyMessageService;
-    @Autowired private DailyMessageBot dailyMessageBot;
+    @Autowired
+    private SubscriberService subscriberService;
+    @Autowired
+    private MessageService messageService;
+    @Autowired
+    private CallbackQueryService callbackQueryService;
+    @Autowired
+    private DailyMessageService dailyMessageService;
+    @Autowired
+    private DailyMessageBot dailyMessageBot;
 
     @Override
     public void processUpdateFromTelegram(Update update) {
         System.out.println("get update: " + update);
         if (update.hasMessage()) {
-            System.out.println("hello!");
             messageService.processMessageFromTelegram(update.getMessage());
+//            subscriberService.getSubscriber(update.getMessage().getChatId()).setUserState(UserStateUtil.OK);
         } else if (update.hasCallbackQuery()) {
             callbackQueryService.processCallbackQuery(update.getCallbackQuery());
         }

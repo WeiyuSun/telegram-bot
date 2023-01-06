@@ -17,4 +17,6 @@ public interface SubscriberService {
     void add(Subscriber subscriber);
 
     boolean contains(Long id);
+
+    void setUserState(Long userId, Integer state);
 }

@@ -5,8 +5,10 @@ import com.weiyuproject.telegrambot.entity.Subscriber;
 import com.weiyuproject.telegrambot.service.MessageService;
 import com.weiyuproject.telegrambot.service.ReceiveAndSendService;
 import com.weiyuproject.telegrambot.service.SubscriberService;
+import com.weiyuproject.telegrambot.utils.ScheduleType;
 import com.weiyuproject.telegrambot.utils.TelegramCommands;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
+import com.weiyuproject.telegrambot.utils.UserStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,8 +16,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -41,27 +41,36 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void processMessageFroSubscriber(Message message) {
+        Subscriber subscriber = subscriberService.getSubscriber(message.getChatId());
+        if ((!message.hasText() || TelegramCommands.isTextCommand(message.getText())) &&
+                subscriber.getUserState().equals(UserStateUtil.WAITING_EVENT_NAME)) {
+            subscriber.setUserState(UserStateUtil.OK);
+        }
         if (message.hasText()) {
-            processTextMessage(message);
+            processTextMessage(message, subscriber);
         } else if (message.hasLocation()) {
             processLocationMessage(message);
         }
     }
 
     private void processMessageForUnsubscribeUser(Message message) {
+
         if (message.hasLocation()) {
             processLocationMessage(message);
         } else if (TelegramCommands.START.equals(message.getText()) || TelegramCommands.SUBSCRIBE.equals(message.getText())) {
-            processTextMessage(message);
+            processTextMessage(message, null);
         } else {
             receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(message.getChatId(), "\uD83D\uDE41 You haven't subscribed to me yet, click here -> /subscribe to get fully functions\uD83D\uDE09"));
         }
     }
 
 
-    private void processTextMessage(Message message) {
+    private void processTextMessage(Message message, Subscriber subscriber) {
+
         String text = message.getText();
         Long userID = message.getChatId();
+
+
         switch (text) {
             case TelegramCommands.START: //1349759680
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getRequestLocationButtonMessage(userID, "Share Location", "🎉Welcome to here."));
@@ -75,7 +84,7 @@ public class MessageServiceImpl implements MessageService {
                     receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "You're already a subscriber. It's my pleasure to serve you\uD83E\uDD70"));
                 } else {
                     receiveAndSendService.sendMessageToTelegram(ToUserUtils.getRequestLocationButtonMessage(userID, "Share Location", "To subscribe me and get all functions , please share your location with me."));
-                    receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "To subscribe me and get all functions , please share your location with me."));
+//                    receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "To subscribe me and get all functions , please share your location with me."));
                 }
                 break;
 
@@ -89,102 +98,47 @@ public class MessageServiceImpl implements MessageService {
                 break;
 
             case TelegramCommands.WEATHER:
-                Subscriber subscriber = subscriberService.getSubscriber(userID);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "🎉Weather service activated"));
                 subscriber.setWeatherService(true);
                 break;
 
             case TelegramCommands.MUTE_WEATHER:
-                subscriberService.getSubscriber(userID).setWeatherService(false);
+                subscriber.setWeatherService(false);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "\uD83D\uDE41Weather service closed"));
                 break;
 
             case TelegramCommands.QUOTE:
-                subscriberService.getSubscriber(userID).setQuoteService(true);
+                subscriber.setQuoteService(true);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "🎉Quote service activated"));
                 break;
 
             case TelegramCommands.MUTE_QUOTE:
-                subscriberService.getSubscriber(userID).setQuoteService(false);
+                subscriber.setQuoteService(false);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "\uD83D\uDE41Quote service closed"));
                 break;
             case TelegramCommands.SCHEDULE:
-                System.out.println("hello world");
+//                receiveAndSendService.sendMessageToTelegram(ToUserUtils.getInitialTimeKeyboard(userID));
+                subscriber.setUserState(UserStateUtil.WAITING_EVENT_NAME);
+                receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "What the name of your new schedule/event?"));
+                break;
+            case default:
+                if (UserStateUtil.WAITING_EVENT_NAME.equals(subscriber.getUserState())) {
+                    // TODO: only first 50 text characters accept
 
-                SendMessage sendMessage = new SendMessage(); // Create a message object object
-                sendMessage.setChatId(userID);
-                sendMessage.setText("select a time");
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> inlineRows = new ArrayList<>();
-
-                List<InlineKeyboardButton> addTimeRow = new ArrayList<>();
-                InlineKeyboardButton addOneHourButton = new InlineKeyboardButton();
-                addOneHourButton.setText("+1");
-                addOneHourButton.setCallbackData("/plusOneHour 12");
-                InlineKeyboardButton addThreeHoursButton = new InlineKeyboardButton();
-                addThreeHoursButton.setText("+3");
-                addThreeHoursButton.setCallbackData("/plusThreeHours 12");
-                addTimeRow.add(addOneHourButton);
-                addTimeRow.add(addThreeHoursButton);
-
-                InlineKeyboardButton addFiveMinButton = new InlineKeyboardButton();
-                addFiveMinButton.setText("+5");
-                addFiveMinButton.setCallbackData("/plusFiveMin 30");
-                InlineKeyboardButton addTenMinButton = new InlineKeyboardButton();
-                addTenMinButton.setText("+10");
-                addTenMinButton.setCallbackData("/plusTenMin 30");
-                addTimeRow.add(addFiveMinButton);
-                addTimeRow.add(addTenMinButton);
-
-                List<InlineKeyboardButton> timeRow = new ArrayList<>();
-                InlineKeyboardButton hourButton = new InlineKeyboardButton();
-                hourButton.setText("\n1️⃣2️⃣\n");
-                hourButton.setCallbackData("/invalid");
-                InlineKeyboardButton minButton = new InlineKeyboardButton();
-                minButton.setText("\n3️⃣0️⃣\n");
-                minButton.setCallbackData("/invalid");
-
-                timeRow.add(hourButton);
-                timeRow.add(minButton);
-
-                List<InlineKeyboardButton> subTimeRow = new ArrayList<>();
-                InlineKeyboardButton subOneHourButton = new InlineKeyboardButton();
-                subOneHourButton.setText("-1");
-                subOneHourButton.setCallbackData("/subOneHour 12");
-                InlineKeyboardButton subThreeHoursButton = new InlineKeyboardButton();
-                subThreeHoursButton.setText("-3");
-                subThreeHoursButton.setCallbackData("/subThreeHours 12");
-                subTimeRow.add(subOneHourButton);
-                subTimeRow.add(subThreeHoursButton);
-
-                InlineKeyboardButton subFiveMinButton = new InlineKeyboardButton();
-                subFiveMinButton.setText("-5");
-                subFiveMinButton.setCallbackData("/subFiveMin 30");
-                InlineKeyboardButton subTenMinButton = new InlineKeyboardButton();
-                subTenMinButton.setText("-10");
-                subTenMinButton.setCallbackData("/subTenMin 30");
-                subTimeRow.add(subFiveMinButton);
-                subTimeRow.add(subTenMinButton);
-
-                List<InlineKeyboardButton> submitRow = new ArrayList<>();
-                InlineKeyboardButton cancelButton = new InlineKeyboardButton();
-                cancelButton.setText("Cancel❌");
-                cancelButton.setCallbackData("/cancelEvent");
-                InlineKeyboardButton confirmButton = new InlineKeyboardButton();
-                confirmButton.setText("Confirm✔️");
-                confirmButton.setCallbackData("/confirmTime 12 30");
-                submitRow.add(cancelButton);
-                submitRow.add(confirmButton);
-
-                inlineRows.add(addTimeRow);
-                inlineRows.add(timeRow);
-                inlineRows.add(subTimeRow);
-                inlineRows.add(submitRow);
-
-                markupInline.setKeyboard(inlineRows);
-                sendMessage.setReplyMarkup(markupInline);
-
-                receiveAndSendService.sendMessageToTelegram(sendMessage);
+                    subscriber.setUserState(UserStateUtil.OK);
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(userID);
+                    sendMessage.setText("What the type of your schedule/event?");
+                    InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+                    InlineKeyboardButton weeklyButton = ToUserUtils.getInlineButton("Weekly", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.WEEKLY_SCHEDULE, text));
+                    InlineKeyboardButton monthlyButton = ToUserUtils.getInlineButton("Monthly", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.MONTHLY_SCHEDULE, text));
+                    InlineKeyboardButton oneTimeButton = ToUserUtils.getInlineButton("One Time", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.ONE_TIME_SCHEDULE, text));
+                    InlineKeyboardButton anniversary = ToUserUtils.getInlineButton("Anniversary", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.ANNIVERSARY, text));
+                    List<List<InlineKeyboardButton>> buttonsRows = ToUserUtils.getInlineButtonRows(ToUserUtils.getInlineButtonsRow(oneTimeButton, anniversary), ToUserUtils.getInlineButtonsRow(monthlyButton, weeklyButton));
+                    markup.setKeyboard(buttonsRows);
+                    sendMessage.setReplyMarkup(markup);
+                    receiveAndSendService.sendMessageToTelegram(sendMessage);
+                }
                 break;
         }
     }
@@ -198,6 +152,8 @@ public class MessageServiceImpl implements MessageService {
             feedbackMessage = "🎉You have successfully subscribed to the daily Message.\n\uD83D\uDDD2Check the command menu to edit your daily message";
             user = new Subscriber();
             user.setId(userID);
+            user.setUserState(UserStateUtil.OK);
+            user.setTimeOffset(-21600);
             subscriberService.getSubscriberList().put(userID, user);
         }
 
@@ -206,5 +162,6 @@ public class MessageServiceImpl implements MessageService {
         user.setCity(openWeatherApi.getCity(user.getLatitude(), user.getLongitude()));
 
         receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, feedbackMessage));
+        user.setUserState(UserStateUtil.OK);
     }
 }

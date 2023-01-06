@@ -12,8 +12,7 @@ public class SubscriberServiceImpl implements SubscriberService {
     private Map<Long, Subscriber> subscribers = new HashMap<>();
 
 
-    @Override
-    public Map<Long, Subscriber> getSubscriberList() {
+    @Override public Map<Long, Subscriber> getSubscriberList() {
         return subscribers;
     }
 
@@ -35,23 +34,20 @@ public class SubscriberServiceImpl implements SubscriberService {
         return false;
     }
 
-    @Override
-    public Subscriber getSubscriber(Long userID) {
+    @Override public Subscriber getSubscriber(Long userID) {
         return subscribers.get(userID);
     }
-
     @Override
     public Subscriber getSubscriber(Subscriber subscriber) {
         return subscribers.get(subscriber.getId());
     }
-
-    @Override
-    public void add(Subscriber subscriber) {
-        subscribers.put(subscriber.getId(), subscriber);
+    @Override public void add(Subscriber subscriber) {subscribers.put(subscriber.getId(), subscriber);}
+    @Override public boolean contains(Long id) {
+        return subscribers.containsKey(id);
     }
 
     @Override
-    public boolean contains(Long id) {
-        return subscribers.containsKey(id);
+    public void setUserState(Long userId, Integer state) {
+        subscribers.get(userId).setUserState(state);
     }
 }

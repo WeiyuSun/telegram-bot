@@ -12,11 +12,14 @@ public class Subscriber {
     private Double latitude;
     private String newsPreference;
     private static String dailyQuote;
+    private Integer timeOffset;
 
     private boolean weatherService;
     private boolean quoteService;
     private boolean newsService;
     private boolean scheduleService;
+
+    private Integer userState;
 
     private List<OneTimeEvent> oneTimeEvents;
     private List<WeeklyEvent> weeklyEvents;
