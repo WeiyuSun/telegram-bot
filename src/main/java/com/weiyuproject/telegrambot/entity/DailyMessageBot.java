@@ -15,22 +15,18 @@ public class DailyMessageBot extends SpringWebhookBot {
     public DailyMessageBot(SetWebhook setWebhook) {
         super(setWebhook);
     }
-
     @Override
     public String getBotUsername() {
         return botUsername;
     }
-
     @Override
     public String getBotToken() {
         return botToken;
     }
-
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         return null;
     }
-
     @Override
     public String getBotPath() {
         return botPath;

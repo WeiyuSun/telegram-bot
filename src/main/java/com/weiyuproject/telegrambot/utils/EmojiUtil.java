@@ -1,6 +1,7 @@
 package com.weiyuproject.telegrambot.utils;
 
 public class EmojiUtil {
+    private EmojiUtil(){}
     public static final String ZERO = "0️⃣";
     public static final String ONE = "1️⃣";
     public static final String TWO = "2️⃣";
@@ -39,17 +40,4 @@ public class EmojiUtil {
         }
         return result.toString();
     }
-
-//    static String getNumberInString(Long number){
-//
-//        if(number <= 0)
-//            return number.toString();
-//
-//        String result = "";
-//        while(number != 0){
-//            result = (number % 10) + result;
-//            number = number / 10;
-//        }
-//        return result;
-//    }
 }

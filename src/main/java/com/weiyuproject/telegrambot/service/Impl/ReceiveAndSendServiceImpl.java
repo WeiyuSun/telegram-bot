@@ -3,14 +3,12 @@ package com.weiyuproject.telegrambot.service.Impl;
 import com.weiyuproject.telegrambot.entity.DailyMessageBot;
 import com.weiyuproject.telegrambot.entity.Subscriber;
 import com.weiyuproject.telegrambot.service.*;
-import com.weiyuproject.telegrambot.utils.TelegramCommands;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
-import com.weiyuproject.telegrambot.utils.UserStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.*;
@@ -45,6 +43,8 @@ public class ReceiveAndSendServiceImpl implements ReceiveAndSendService {
                 dailyMessageBot.execute((SendMessage) sendMessage);
             else if (sendMessage instanceof EditMessageReplyMarkup)
                 dailyMessageBot.execute((EditMessageReplyMarkup) sendMessage);
+            else if(sendMessage instanceof EditMessageText)
+                dailyMessageBot.execute((EditMessageText) sendMessage);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -122,19 +122,19 @@ public class MessageServiceImpl implements MessageService {
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "What the name of your new schedule/event?"));
                 break;
             case default:
-                if (UserStateUtil.WAITING_EVENT_NAME.equals(subscriber.getUserState())) {
+                if (UserStateUtil.WAITING_EVENT_NAME == subscriber.getUserState()) {
                     // TODO: only first 50 text characters accept
 
                     subscriber.setUserState(UserStateUtil.OK);
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setChatId(userID);
-                    sendMessage.setText("What the type of your schedule/event?");
+                    sendMessage.setText("What the type of your schedule?");
                     InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
                     InlineKeyboardButton weeklyButton = ToUserUtils.getInlineButton("Weekly", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.WEEKLY_SCHEDULE, text));
-                    InlineKeyboardButton monthlyButton = ToUserUtils.getInlineButton("Monthly", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.MONTHLY_SCHEDULE, text));
+//                    InlineKeyboardButton monthlyButton = ToUserUtils.getInlineButton("Monthly", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.MONTHLY_SCHEDULE, text));
                     InlineKeyboardButton oneTimeButton = ToUserUtils.getInlineButton("One Time", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.ONE_TIME_SCHEDULE, text));
                     InlineKeyboardButton anniversary = ToUserUtils.getInlineButton("Anniversary", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.ANNIVERSARY, text));
-                    List<List<InlineKeyboardButton>> buttonsRows = ToUserUtils.getInlineButtonRows(ToUserUtils.getInlineButtonsRow(oneTimeButton, anniversary), ToUserUtils.getInlineButtonsRow(monthlyButton, weeklyButton));
+                    List<List<InlineKeyboardButton>> buttonsRows = ToUserUtils.getInlineButtonsRows(ToUserUtils.getInlineButtonsRow(anniversary, oneTimeButton, weeklyButton));
                     markup.setKeyboard(buttonsRows);
                     sendMessage.setReplyMarkup(markup);
                     receiveAndSendService.sendMessageToTelegram(sendMessage);

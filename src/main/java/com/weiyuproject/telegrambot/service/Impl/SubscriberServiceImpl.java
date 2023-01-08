@@ -1,9 +1,11 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
+import com.weiyuproject.telegrambot.entity.OneTimeSchedule;
 import com.weiyuproject.telegrambot.entity.Subscriber;
 import com.weiyuproject.telegrambot.service.SubscriberService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +49,28 @@ public class SubscriberServiceImpl implements SubscriberService {
     }
 
     @Override
-    public void setUserState(Long userId, Integer state) {
-        subscribers.get(userId).setUserState(state);
+    public boolean addOnetimeSchedule(Long userID, OneTimeSchedule oneTimeSchedule) {
+        Subscriber subscriber = subscribers.get(userID);
+
+        if(subscriber == null)
+            return false;
+
+        if(subscriber.getOneTimeEvents() == null){
+            subscriber.setOneTimeEvents(new ArrayList<>());
+        }
+
+        subscriber.getOneTimeEvents().add(oneTimeSchedule);
+        return true;
+    }
+
+    @Override
+    public boolean setUserState(Long userId, Integer state) {
+        Subscriber subscriber = subscribers.get(userId);
+
+        if(subscriber == null)
+            return false;
+
+        subscriber.setUserState(state);
+        return true;
     }
 }
