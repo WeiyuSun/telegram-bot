@@ -1,7 +1,6 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
-import com.weiyuproject.telegrambot.entity.OneTimeSchedule;
-import com.weiyuproject.telegrambot.entity.Subscriber;
+import com.weiyuproject.telegrambot.entity.*;
 import com.weiyuproject.telegrambot.service.SubscriberService;
 import org.springframework.stereotype.Service;
 
@@ -48,8 +47,7 @@ public class SubscriberServiceImpl implements SubscriberService {
         return subscribers.containsKey(id);
     }
 
-    @Override
-    public boolean addOnetimeSchedule(Long userID, OneTimeSchedule oneTimeSchedule) {
+    private boolean addOnetimeSchedule(Long userID, OneTimeSchedule oneTimeSchedule) {
         Subscriber subscriber = subscribers.get(userID);
 
         if(subscriber == null)
@@ -60,7 +58,53 @@ public class SubscriberServiceImpl implements SubscriberService {
         }
 
         subscriber.getOneTimeEvents().add(oneTimeSchedule);
+        for(OneTimeSchedule oneTimeSchedule1: subscriber.getOneTimeEvents() ){
+            System.out.println(oneTimeSchedule1.getName() + " " + oneTimeSchedule1.getScheduleTime());
+        }
         return true;
+    }
+
+    private boolean addAnniversary(Long userID, Anniversary anniversary) {
+        Subscriber subscriber = subscribers.get(userID);
+
+        if(subscriber == null)
+            return false;
+
+        if(subscriber.getAnniversaries() == null)
+            subscriber.setAnniversaries(new ArrayList<>());
+
+        subscriber.getAnniversaries().add(anniversary);
+
+        for(Anniversary anniversary1: subscriber.getAnniversaries() ){
+            System.out.println(anniversary1.getName() + " " + anniversary1.getAnniversaryDate());
+        }
+        return true;
+    }
+
+    private boolean addWeeklySchedule(Long userID, WeeklySchedule weeklySchedule){
+        Subscriber subscriber = subscribers.get(userID);
+
+        if(subscriber == null)
+            return false;
+
+        if(subscriber.getWeeklyEvents() == null)
+            subscriber.setWeeklyEvents(new ArrayList<>());
+
+        subscriber.getWeeklyEvents().add(weeklySchedule);
+        for(WeeklySchedule weeklySchedule1: subscriber.getWeeklyEvents() ){
+            System.out.println(weeklySchedule1.getName() + " " + weeklySchedule1.getScheduleTime());
+        }
+        return true;
+    }
+
+    @Override
+    public boolean addSchedule(Long userID, Schedule schedule) {
+        if(schedule instanceof OneTimeSchedule)
+            return addOnetimeSchedule(userID, (OneTimeSchedule) schedule);
+        else if(schedule instanceof WeeklySchedule)
+            return addWeeklySchedule(userID, (WeeklySchedule) schedule);
+        else
+            return addAnniversary(userID, (Anniversary) schedule);
     }
 
     @Override

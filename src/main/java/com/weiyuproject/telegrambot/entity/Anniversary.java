@@ -1,10 +1,17 @@
 package com.weiyuproject.telegrambot.entity;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 public class Anniversary extends Schedule {
-    private LocalDate localDate;
+    private LocalDate anniversaryDate;
+    public Anniversary(String name, LocalDate anniversaryDate) {
+        super(name);
+        this.anniversaryDate = anniversaryDate;
+    }
 }

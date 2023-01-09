@@ -1,10 +1,11 @@
 package com.weiyuproject.telegrambot.service.Impl;
-import com.weiyuproject.telegrambot.entity.OneTimeSchedule;
-import com.weiyuproject.telegrambot.entity.Subscriber;
+
+import com.weiyuproject.telegrambot.entity.*;
 import com.weiyuproject.telegrambot.service.CallbackQueryService;
 import com.weiyuproject.telegrambot.service.ReceiveAndSendService;
 import com.weiyuproject.telegrambot.service.SubscriberService;
-import com.weiyuproject.telegrambot.utils.ScheduleType;
+import com.weiyuproject.telegrambot.utils.DateUtils;
+import com.weiyuproject.telegrambot.utils.ScheduleUtils;
 import com.weiyuproject.telegrambot.utils.TelegramCommands;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,10 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class CallbackQueryServiceImpl implements CallbackQueryService {
@@ -31,8 +32,7 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
     public void processCallbackQuery(CallbackQuery callbackQuery) {
         Subscriber subscriber = subscriberService.getSubscriber(callbackQuery.getMessage().getChatId());
         String callbackData = callbackQuery.getData();
-        String[] callbackTokens = callbackData.split("&&");
-        System.out.println(Arrays.toString(callbackTokens));
+        String[] callbackTokens = callbackData.split("`");
         switch (callbackTokens[0]) {
             case TelegramCommands.CALLBACK_SCHEDULE_TYPE: {
                 processScheduleTypeCallback(callbackQuery, callbackTokens, subscriber);
@@ -64,10 +64,9 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 break;
             }
 
-            case TelegramCommands.CALLBACK_CONFIRM_DATE: {
-                // TODO: if the date is earlier than current, let user select a new time
-                // 0 command, 1 schedule type, 2 year, 3 month, 4 day, 5 schedule name
-                String scheduleInfo = callbackTokens[1] + "&&" + callbackTokens[2] + "&&" + callbackTokens[3] + "&&" + callbackTokens[4] + "&&" + callbackTokens[5];
+            case TelegramCommands.CALLBACK_CONFIRM_WEEK: {
+                // 0 command, 1 type, 2 year, 3 month, 4 day, 5 name
+                String scheduleInfo = callbackTokens[1] + "`" + callbackTokens[2] + "`" + callbackTokens[3] + "`" + callbackTokens[4] + "`" + callbackTokens[5];
                 EditMessageText editMessageText = ToUserUtils.getEditMessageText(
                         "What is the schedule time?🤔",
                         callbackQuery.getMessage().getChatId(),
@@ -78,9 +77,35 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 break;
             }
 
+            case TelegramCommands.CALLBACK_CONFIRM_DATE: {
+                // 0 command, 1 schedule type, 2 year, 3 month, 4 day, 5 schedule name
+                if (Integer.parseInt(callbackTokens[1]) == ScheduleUtils.ANNIVERSARY) {
+                    LocalDate anniversaryDate = LocalDate.of(Integer.parseInt(callbackTokens[2]), Integer.parseInt(callbackTokens[3]), Integer.parseInt(callbackTokens[4]));
+                    Anniversary anniversary = new Anniversary(callbackTokens[5], anniversaryDate);
+                    anniversary.setAnniversaryDate(anniversaryDate);
+                    anniversary.setName(callbackTokens[5]);
+                    subscriberService.addSchedule(callbackQuery.getMessage().getChatId(), anniversary);
+                    EditMessageText editMessageText = ToUserUtils.getEditMessageText("🎉your anniversary saved!", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
+                    receiveAndSendService.sendMessageToTelegram(editMessageText);
+                } else if (Integer.parseInt(callbackTokens[1]) == ScheduleUtils.ONE_TIME_SCHEDULE) {
+                    // TODO: if the date is earlier than current, let user select a new time
+
+                    String scheduleInfo = callbackTokens[1] + "`" + callbackTokens[2] + "`" + callbackTokens[3] + "`" + callbackTokens[4] + "`" + callbackTokens[5];
+                    EditMessageText editMessageText = ToUserUtils.getEditMessageText(
+                            "What is the schedule time?🤔",
+                            callbackQuery.getMessage().getChatId(),
+                            callbackQuery.getMessage().getMessageId(),
+                            new InlineKeyboardMarkup(ToUserUtils.inlineTimeKeyboardRows(12, 30, scheduleInfo))
+                    );
+                    receiveAndSendService.sendMessageToTelegram(editMessageText);
+                }
+
+                break;
+            }
+
             case TelegramCommands.CALLBACK_CHANGE_HR: {
                 // 0 command, 1 hour, 2 minute, 3 hr shift, 4 schedule type, 5 year, 6 month, 7 day, 8 schedule name
-                String scheduleInfo = String.format("%s&&%s&&%s&&%s&&%s", callbackTokens[4], callbackTokens[5], callbackTokens[6], callbackTokens[7], callbackTokens[8]);
+                String scheduleInfo = String.format("%s`%s`%s`%s`%s", callbackTokens[4], callbackTokens[5], callbackTokens[6], callbackTokens[7], callbackTokens[8]);
                 int changedHour = Integer.parseInt(callbackTokens[1]) + Integer.parseInt(callbackTokens[3]);
                 if (changedHour < 0)
                     changedHour += 24;
@@ -97,7 +122,7 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
             }
 
             case TelegramCommands.CALLBACK_CHANGE_MIN: {
-                String scheduleInfo = String.format("%s&&%s&&%s&&%s&&%s", callbackTokens[4], callbackTokens[5], callbackTokens[6], callbackTokens[7], callbackTokens[8]);
+                String scheduleInfo = String.format("%s`%s`%s`%s`%s", callbackTokens[4], callbackTokens[5], callbackTokens[6], callbackTokens[7], callbackTokens[8]);
                 // 0 command, 1 hour, 2 minute, 3 min shift, 4 schedule type, 5 year, 6 month, 7 day, 8 schedule name
                 int changedMin = Integer.parseInt(callbackTokens[2]) + Integer.parseInt(callbackTokens[3]);
                 if (changedMin < 0)
@@ -117,28 +142,27 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
             }
 
             case TelegramCommands.CALLBACK_SCHEDULE_CONFIRM: {
+                int year = Integer.parseInt(callbackTokens[4]);
+                int month = Integer.parseInt(callbackTokens[5]);
+                int day = Integer.parseInt(callbackTokens[6]);
+                int hour = Integer.parseInt(callbackTokens[1]);
+                int minute = Integer.parseInt(callbackTokens[2]);
+                int scheduleType = Integer.parseInt(callbackTokens[3]);
+                String scheduleName = callbackTokens[7];
+
                 // 0 command, 1 minute, 2 hour, 3 type, 4 year, 5 month, 6 day, 7 name
+                LocalDateTime scheduleTime = LocalDateTime.of(year, month, day, hour, minute).minusSeconds(subscriber.getTimeOffset()); // save as UTC time
 
-                if (callbackTokens[3].equals(ScheduleType.ONE_TIME_SCHEDULE + "")) {
-                    int year = Integer.parseInt(callbackTokens[4]);
-                    int month = Integer.parseInt(callbackTokens[5]);
-                    int day = Integer.parseInt(callbackTokens[6]);
-                    int hour = Integer.parseInt(callbackTokens[1]);
-                    int minute = Integer.parseInt(callbackTokens[2]);
-
-                    System.out.printf("%d:%d%n", hour, minute);
-
-                    LocalDateTime scheduleTime = LocalDateTime.of(year, month, day, hour, minute).minusSeconds(subscriber.getTimeOffset());
-                    OneTimeSchedule schedule = new OneTimeSchedule();
-                    schedule.setScheduleTime(scheduleTime);
-                    schedule.setName(callbackTokens[7]);
-                    subscriberService.addOnetimeSchedule(callbackQuery.getMessage().getChatId(), schedule);
-                    for (OneTimeSchedule schedule1: subscriber.getOneTimeEvents()){
-                        System.out.println(schedule1.getScheduleTime());
-                    }
-                    EditMessageText editMessageText = ToUserUtils.getEditMessageText("🎉your schedule saved!", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
-                    receiveAndSendService.sendMessageToTelegram(editMessageText);
+                Schedule schedule = null;
+                if (scheduleType == ScheduleUtils.ONE_TIME_SCHEDULE) {
+                    schedule = new OneTimeSchedule(scheduleName, scheduleTime);
+                } else if (scheduleType == ScheduleUtils.WEEKLY_SCHEDULE) {
+                    schedule = new WeeklySchedule(scheduleName, scheduleTime);
                 }
+
+                subscriberService.addSchedule(callbackQuery.getMessage().getChatId(), schedule);
+                EditMessageText editMessageText = ToUserUtils.getEditMessageText("🎉your schedule saved!", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
+                receiveAndSendService.sendMessageToTelegram(editMessageText);
                 break;
             }
         }
@@ -150,60 +174,48 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
         // 0 callback command, 1 schedule type, 2 schedule name
         int scheduleType = Integer.parseInt(callbackTokens[1]);
         String scheduleName = callbackTokens[2];
-        switch (scheduleType) {
-            case ScheduleType.ONE_TIME_SCHEDULE:
-                LocalDate today = LocalDateTime.now().plusSeconds(subscriber.getTimeOffset()).toLocalDate();
-                System.out.println("today is :" + LocalDateTime.now().plusSeconds(subscriber.getTimeOffset()));
-                LocalDate firstDayOfMonth = LocalDate.of(today.getYear(), today.getMonthValue(), 1);
-                EditMessageText editMessageText = ToUserUtils.getEditMessageText(
-                        "What is the date of the schedule?🤔",
-                        callbackQuery.getMessage().getChatId(),
-                        callbackQuery.getMessage().getMessageId(),
-                        new InlineKeyboardMarkup(ToUserUtils.getInlineCalendar(firstDayOfMonth, today, scheduleType, scheduleName))
-                );
-                receiveAndSendService.sendMessageToTelegram(editMessageText);
-                break; // case: ONE_TIME_SCHEDULE
+
+        if (ScheduleUtils.ONE_TIME_SCHEDULE == scheduleType || ScheduleUtils.ANNIVERSARY == scheduleType) {
+            LocalDate today = LocalDateTime.now().plusSeconds(subscriber.getTimeOffset()).toLocalDate();
+            LocalDate firstDayOfMonth = LocalDate.of(today.getYear(), today.getMonthValue(), 1);
+            EditMessageText editMessageText = ToUserUtils.getEditMessageText(
+                    "What is the date of the schedule?🤔",
+                    callbackQuery.getMessage().getChatId(),
+                    callbackQuery.getMessage().getMessageId(),
+                    new InlineKeyboardMarkup(ToUserUtils.getInlineCalendar(firstDayOfMonth, today, scheduleType, scheduleName))
+            );
+            receiveAndSendService.sendMessageToTelegram(editMessageText);
+        } else if (ScheduleUtils.WEEKLY_SCHEDULE == scheduleType) {
+            LocalDateTime localDateTime = LocalDateTime.now().plusSeconds(subscriber.getTimeOffset());
+            Map<Integer, InlineKeyboardButton> oneWeekDates = new HashMap<>();
+
+            for (int i = 1; i <= 7; i++) {
+                // 0 command, 1 type, 2 year, 3 month, 4 day, 5 name
+                InlineKeyboardButton inlineKeyboardButton = ToUserUtils.getInlineButton(DateUtils.getWeekOfDay(localDateTime.getDayOfWeek().getValue()), String.format("%s`%d`%d`%d`%d`%s", TelegramCommands.CALLBACK_CONFIRM_WEEK, ScheduleUtils.WEEKLY_SCHEDULE, localDateTime.getYear(), localDateTime.getMonthValue(), localDateTime.getDayOfMonth(), scheduleName));
+
+                oneWeekDates.put(localDateTime.getDayOfWeek().getValue(), inlineKeyboardButton);
+                localDateTime = localDateTime.plusDays(1);
+            }
+
+            List<InlineKeyboardButton> weeksRow = ToUserUtils.getInlineButtonsRow(
+                    oneWeekDates.get(DayOfWeek.SUNDAY.getValue()),
+                    oneWeekDates.get(DayOfWeek.MONDAY.getValue()),
+                    oneWeekDates.get(DayOfWeek.TUESDAY.getValue()),
+                    oneWeekDates.get(DayOfWeek.WEDNESDAY.getValue()),
+                    oneWeekDates.get(DayOfWeek.THURSDAY.getValue()),
+                    oneWeekDates.get(DayOfWeek.FRIDAY.getValue()),
+                    oneWeekDates.get(DayOfWeek.SATURDAY.getValue())
+            );
+
+            EditMessageText editMessageText = ToUserUtils.getEditMessageText(
+                    "What day of the week does it start?",
+                    callbackQuery.getMessage().getChatId(),
+                    callbackQuery.getMessage().getMessageId(),
+                    new InlineKeyboardMarkup(ToUserUtils.getInlineButtonsRows(weeksRow))
+            );
+
+            receiveAndSendService.sendMessageToTelegram(editMessageText);
         }
     }
 
 }
-
-
-// call back
-//    @Override
-//    public void processCallbackQuery(CallbackQuery callbackQuery) {
-//        String callbackData = callbackQuery.getData();
-//        System.out.println(callbackData);
-//        String[] dataTokens = callbackData.split("&&");
-//        System.out.println(Arrays.toString(dataTokens));
-//        // 0 command, 1 hour, 2 minute, 3 change value, 4 schedule info 5 schedule type
-//
-//        if (dataTokens[0].equals(TelegramCommands.CALLBACK_CHANGE_HR)) {
-//            int changedHour = Integer.parseInt(dataTokens[1]) + Integer.parseInt(dataTokens[3]);
-//            if (changedHour < 0)
-//                changedHour += 24;
-//            else if (changedHour >= 24)
-//                changedHour -= 24;
-//            EditMessageReplyMarkup replyMarkup = new EditMessageReplyMarkup();
-//            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-//            inlineKeyboardMarkup.setKeyboard(ToUserUtils.inlineTimeKeyboardRows(changedHour, Integer.parseInt(dataTokens[2]), dataTokens[4], Integer.parseInt(dataTokens[5])));
-//            replyMarkup.setReplyMarkup(inlineKeyboardMarkup);
-//            replyMarkup.setChatId(callbackQuery.getMessage().getChatId());
-//            replyMarkup.setMessageId(callbackQuery.getMessage().getMessageId());
-//            receiveAndSendService.sendMessageToTelegram(replyMarkup);
-//        } else if (dataTokens[0].equals(TelegramCommands.CALLBACK_CHANGE_MIN)) {
-//            int changedMin = Integer.parseInt(dataTokens[2]) + Integer.parseInt(dataTokens[3]);
-//            if (changedMin < 0)
-//                changedMin += 60;
-//            else if (changedMin >= 60)
-//                changedMin -= 60;
-//            EditMessageReplyMarkup replyMarkup = new EditMessageReplyMarkup();
-//            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-//            inlineKeyboardMarkup.setKeyboard(ToUserUtils.inlineTimeKeyboardRows(Integer.parseInt(dataTokens[1]), changedMin, dataTokens[4], Integer.parseInt(dataTokens[5])));
-//            replyMarkup.setReplyMarkup(inlineKeyboardMarkup);
-//            replyMarkup.setChatId(callbackQuery.getMessage().getChatId());
-//            replyMarkup.setMessageId(callbackQuery.getMessage().getMessageId());
-//            receiveAndSendService.sendMessageToTelegram(replyMarkup);
-//        } else if(dataTokens[0].equals(TelegramCommands.CALLBACK_SCHEDULE_CONFIRM)) {
-//        }
-//    }

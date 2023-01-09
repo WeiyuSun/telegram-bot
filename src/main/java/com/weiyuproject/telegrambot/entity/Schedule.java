@@ -5,4 +5,8 @@ import lombok.Setter;
 @Setter
 public abstract class Schedule {
     private String name;
+
+    public Schedule(String name){
+        this.name = name;
+    }
 }

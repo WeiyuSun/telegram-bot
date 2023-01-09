@@ -1,9 +1,14 @@
 package com.weiyuproject.telegrambot.entity;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-
+@Getter
+@Setter
 public class WeeklySchedule extends Schedule {
-    private DayOfWeek scheduleWeekDay;
-    private LocalTime scheduleTime;
+    private LocalDateTime scheduleTime;
+    public WeeklySchedule(String name, LocalDateTime scheduleTime){
+        super(name);
+        this.scheduleTime = scheduleTime;
+    }
 }

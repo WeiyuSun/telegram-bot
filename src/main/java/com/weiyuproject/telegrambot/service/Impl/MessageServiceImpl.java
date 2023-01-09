@@ -5,7 +5,7 @@ import com.weiyuproject.telegrambot.entity.Subscriber;
 import com.weiyuproject.telegrambot.service.MessageService;
 import com.weiyuproject.telegrambot.service.ReceiveAndSendService;
 import com.weiyuproject.telegrambot.service.SubscriberService;
-import com.weiyuproject.telegrambot.utils.ScheduleType;
+import com.weiyuproject.telegrambot.utils.ScheduleUtils;
 import com.weiyuproject.telegrambot.utils.TelegramCommands;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
 import com.weiyuproject.telegrambot.utils.UserStateUtil;
@@ -123,17 +123,22 @@ public class MessageServiceImpl implements MessageService {
                 break;
             case default:
                 if (UserStateUtil.WAITING_EVENT_NAME == subscriber.getUserState()) {
-                    // TODO: only first 50 text characters accept
-
-                    subscriber.setUserState(UserStateUtil.OK);
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setChatId(userID);
+
+                    if(text.length() > 35){
+                        sendMessage.setText("The schedule name cannot over 35 characters.");
+                        receiveAndSendService.sendMessageToTelegram(sendMessage);
+                        return;
+                    }
+
+                    subscriber.setUserState(UserStateUtil.OK);
                     sendMessage.setText("What the type of your schedule?");
                     InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-                    InlineKeyboardButton weeklyButton = ToUserUtils.getInlineButton("Weekly", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.WEEKLY_SCHEDULE, text));
-//                    InlineKeyboardButton monthlyButton = ToUserUtils.getInlineButton("Monthly", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.MONTHLY_SCHEDULE, text));
-                    InlineKeyboardButton oneTimeButton = ToUserUtils.getInlineButton("One Time", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.ONE_TIME_SCHEDULE, text));
-                    InlineKeyboardButton anniversary = ToUserUtils.getInlineButton("Anniversary", String.format("%s&&%d&&%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.ANNIVERSARY, text));
+                    InlineKeyboardButton weeklyButton = ToUserUtils.getInlineButton("Weekly", String.format("%s`%d`%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleUtils.WEEKLY_SCHEDULE, text));
+//                    InlineKeyboardButton monthlyButton = ToUserUtils.getInlineButton("Monthly", String.format("%s`%d`%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleType.MONTHLY_SCHEDULE, text));
+                    InlineKeyboardButton oneTimeButton = ToUserUtils.getInlineButton("One Time", String.format("%s`%d`%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleUtils.ONE_TIME_SCHEDULE, text));
+                    InlineKeyboardButton anniversary = ToUserUtils.getInlineButton("Anniversary", String.format("%s`%d`%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleUtils.ANNIVERSARY, text));
                     List<List<InlineKeyboardButton>> buttonsRows = ToUserUtils.getInlineButtonsRows(ToUserUtils.getInlineButtonsRow(anniversary, oneTimeButton, weeklyButton));
                     markup.setKeyboard(buttonsRows);
                     sendMessage.setReplyMarkup(markup);
