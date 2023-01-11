@@ -1,8 +1,5 @@
 package com.weiyuproject.telegrambot.entity;
-
 import lombok.Data;
-
-import javax.naming.InsufficientResourcesException;
 import java.util.List;
 
 @Data
@@ -11,15 +8,12 @@ public class Subscriber {
     private String city;
     private Double longitude;
     private Double latitude;
-    private String newsPreference;
     private Integer timeOffset;
-
     private boolean weatherService;
     private boolean quoteService;
     private boolean newsService;
     private boolean scheduleService;
     private Integer userState;
-
     private List<OneTimeSchedule> oneTimeEvents;
     private List<WeeklySchedule> weeklyEvents;
     private List<MonthlyEvent> monthlyEvents;

@@ -9,7 +9,7 @@ import java.time.ZoneId;
 public class AutoTaskServiceImpl implements AutoTaskService {
     @Override
 //    @Scheduled()
-    @PostConstruct
+//    @PostConstruct
     public void utcTimeTask() {
         for(String zoneId: ZoneId.getAvailableZoneIds()){
             System.out.println(zoneId);
