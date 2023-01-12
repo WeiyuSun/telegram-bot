@@ -1,7 +1,8 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
+import com.weiyuproject.telegrambot.api.GoogleApi;
 import com.weiyuproject.telegrambot.api.OpenWeatherApi;
-import com.weiyuproject.telegrambot.entity.Subscriber;
+import com.weiyuproject.telegrambot.object.entity.SubscriberEntity;
 import com.weiyuproject.telegrambot.service.MessageService;
 import com.weiyuproject.telegrambot.service.ReceiveAndSendService;
 import com.weiyuproject.telegrambot.service.SubscriberService;
@@ -12,10 +13,12 @@ import com.weiyuproject.telegrambot.utils.UserStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+
 import java.util.List;
 
 @Service
@@ -29,6 +32,8 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private OpenWeatherApi openWeatherApi;
     @Autowired
+    private GoogleApi googleApi;
+    @Autowired
     ReceiveAndSendService receiveAndSendService;
 
     @Override
@@ -41,7 +46,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void processMessageFroSubscriber(Message message) {
-        Subscriber subscriber = subscriberService.getSubscriber(message.getChatId());
+        SubscriberEntity subscriber = subscriberService.getSubscriber(message.getChatId());
         if ((!message.hasText() || TelegramCommands.isTextCommand(message.getText())) &&
                 subscriber.getUserState().equals(UserStateUtil.WAITING_EVENT_NAME)) {
             subscriber.setUserState(UserStateUtil.OK);
@@ -65,11 +70,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
 
-    private void processTextMessage(Message message, Subscriber subscriber) {
-
+    private void processTextMessage(Message message, SubscriberEntity subscriber) {
         String text = message.getText();
         Long userID = message.getChatId();
-
 
         switch (text) {
             case TelegramCommands.START: //1349759680
@@ -99,26 +102,25 @@ public class MessageServiceImpl implements MessageService {
 
             case TelegramCommands.WEATHER:
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "🎉Weather service activated"));
-                subscriber.setWeatherService(true);
+                subscriberService.setWeatherService(userID, true);
                 break;
 
             case TelegramCommands.MUTE_WEATHER:
-                subscriber.setWeatherService(false);
+                subscriberService.setWeatherService(userID, false);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "\uD83D\uDE41Weather service closed"));
                 break;
 
             case TelegramCommands.QUOTE:
-                subscriber.setQuoteService(true);
+                subscriberService.setQuoteService(userID, true);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "🎉Quote service activated"));
                 break;
 
             case TelegramCommands.MUTE_QUOTE:
-                subscriber.setQuoteService(false);
+                subscriberService.setQuoteService(userID, false);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "\uD83D\uDE41Quote service closed"));
                 break;
             case TelegramCommands.SCHEDULE:
-//                receiveAndSendService.sendMessageToTelegram(ToUserUtils.getInitialTimeKeyboard(userID));
-                subscriber.setUserState(UserStateUtil.WAITING_EVENT_NAME);
+                subscriberService.setUserState(userID, UserStateUtil.WAITING_EVENT_NAME);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "What the name of your new schedule/event?"));
                 break;
             case default:
@@ -126,13 +128,13 @@ public class MessageServiceImpl implements MessageService {
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setChatId(userID);
 
-                    if(text.length() > 35){
+                    if (text.length() > 35) {
                         sendMessage.setText("The schedule name cannot over 35 characters.");
                         receiveAndSendService.sendMessageToTelegram(sendMessage);
                         return;
                     }
 
-                    subscriber.setUserState(UserStateUtil.OK);
+                    subscriberService.setUserState(userID, UserStateUtil.OK);
                     sendMessage.setText("What the type of your schedule?");
                     InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
                     InlineKeyboardButton weeklyButton = ToUserUtils.getInlineButton("Weekly", String.format("%s`%d`%s", TelegramCommands.CALLBACK_SCHEDULE_TYPE, ScheduleUtils.WEEKLY_SCHEDULE, text));
@@ -149,22 +151,26 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void processLocationMessage(Message message) {
+        System.out.println("from processLocationMessage: " + message);
         Long userID = message.getChatId();
-        Subscriber user = subscriberService.getSubscriberList().get(userID);
+        SubscriberEntity user = subscriberService.getSubscriber(userID);
 
         String feedbackMessage = "🎉Thanks!! Your location updated";
         if (user == null) {
             feedbackMessage = "🎉You have successfully subscribed to the daily Message.\n\uD83D\uDDD2Check the command menu to edit your daily message";
-            user = new Subscriber();
-            user.setId(userID);
-            user.setUserState(UserStateUtil.OK);
-            user.setTimeOffset(-21600);
-            subscriberService.getSubscriberList().put(userID, user);
+            String city = openWeatherApi.getCity(message.getLocation().getLongitude(), message.getLocation().getLatitude());
+            user = new SubscriberEntity(userID, city, message.getLocation().getLongitude(), message.getLocation().getLatitude(), -21600);
+            subscriberService.add(user);
         }
 
         user.setLongitude(message.getLocation().getLongitude());
         user.setLatitude(message.getLocation().getLatitude());
-        user.setCity(openWeatherApi.getCity(user.getLatitude(), user.getLongitude()));
+        user.setCity(openWeatherApi.getCity(user.getLongitude(), user.getLatitude()));
+        user.setTimeOffset(googleApi.getTimeOffset(user.getLongitude(), user.getLatitude()));
+
+        if(!subscriberService.updateSubscriber(user)){
+            feedbackMessage = "Sorry, current location is not available...";
+        }
 
         receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, feedbackMessage));
         user.setUserState(UserStateUtil.OK);

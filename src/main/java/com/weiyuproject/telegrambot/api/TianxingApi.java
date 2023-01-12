@@ -10,9 +10,7 @@ import org.springframework.web.client.RestTemplate;
 public class TianxingApi {
     @Value("${tianxing.config.quoteUrl}")
     private String quoteUrl;
-
     private String todayQuote;
-
     @Autowired
     private RestTemplate restTemplate;
 

@@ -1,7 +1,7 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
-import com.weiyuproject.telegrambot.entity.DailyMessageBot;
-import com.weiyuproject.telegrambot.entity.Subscriber;
+import com.weiyuproject.telegrambot.object.entity.SubscriberEntity;
+import com.weiyuproject.telegrambot.robot.DailyMessageBot;
 import com.weiyuproject.telegrambot.service.*;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,26 +53,26 @@ public class ReceiveAndSendServiceImpl implements ReceiveAndSendService {
     /**
      * send message to all subscribers
      */
-    public void sendDailyMessageToTelegram() {
-        Map<Long, Subscriber> subscriberList = subscriberService.getSubscriberList();
-        subscriberList.forEach((chatID, subscriber) -> {
-            List<String> todayMessages = dailyMessageService.getDailyMessages(subscriber);
-
-            for (String message : todayMessages) {
-                sendMessageToTelegram(ToUserUtils.getTextMessage(chatID, message));
-            }
-        });
-    }
+//    public void sendDailyMessageToTelegram() {
+//        Map<Long, Subscriber> subscriberList = subscriberService.getSubscriberList();
+//        subscriberList.forEach((chatID, subscriber) -> {
+//            List<String> todayMessages = dailyMessageService.getDailyMessages(subscriber);
+//
+//            for (String message : todayMessages) {
+//                sendMessageToTelegram(ToUserUtils.getTextMessage(chatID, message));
+//            }
+//        });
+//    }
 
     /**
      * send message to given subscribers
      */
-    public void sendDailyMessageToTelegram(List<Subscriber> subscribers) {
-        for (Subscriber subscriber : subscribers) {
+    public void sendDailyMessageToTelegram(List<SubscriberEntity> subscribers) {
+        for (SubscriberEntity subscriber : subscribers) {
             List<String> todayMessages = dailyMessageService.getDailyMessages(subscriber);
 
             for (String message : todayMessages) {
-                sendMessageToTelegram(ToUserUtils.getTextMessage(subscriber.getId(), message));
+                sendMessageToTelegram(ToUserUtils.getTextMessage(subscriber.getUserID(), message));
             }
         }
     }

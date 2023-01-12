@@ -1,4 +1,4 @@
-package com.weiyuproject.telegrambot.entity;
+package com.weiyuproject.telegrambot.robot;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

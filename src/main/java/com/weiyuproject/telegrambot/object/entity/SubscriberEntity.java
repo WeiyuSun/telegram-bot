@@ -1,5 +1,6 @@
 package com.weiyuproject.telegrambot.object.entity;
 
+import com.weiyuproject.telegrambot.utils.UserStateUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -18,6 +19,29 @@ public class SubscriberEntity {
         this.timeOffset = timeOffset;
         this.enableWeatherService = enableWeatherService;
         this.enableQuoteService = enableQuoteService;
+        userState = UserStateUtil.OK;
+    }
+
+    public SubscriberEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset, Boolean enableWeatherService, Boolean enableQuoteService, Integer userState) {
+        this.userID = userID;
+        this.city = city;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.timeOffset = timeOffset;
+        this.enableWeatherService = enableWeatherService;
+        this.enableQuoteService = enableQuoteService;
+        this.userState = userState;
+    }
+
+    public SubscriberEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset) {
+        this.userID = userID;
+        this.city = city;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.timeOffset = timeOffset;
+        this.enableWeatherService = false;
+        this.enableQuoteService = false;
+        this.userState = UserStateUtil.OK;
     }
 
     @Id
@@ -35,6 +59,8 @@ public class SubscriberEntity {
     private Boolean enableWeatherService;
     @Column(nullable = false, name = "enable_quote_service")
     private Boolean enableQuoteService;
+    @Column(nullable = false, name = "user_state")
+    private Integer userState;
 
     public SubscriberEntity() {
     }

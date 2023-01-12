@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "weekly_schedule")
-public class WeeklyScheduleEntity {
+public class WeeklyScheduleEntity extends ScheduleEntity {
     public WeeklyScheduleEntity() {
     }
 
@@ -27,6 +27,6 @@ public class WeeklyScheduleEntity {
     @Column(name = "userid", nullable = false)
     private Long userId;
 
-    @Column(name = "timeMark", nullable = false)
+    @Column(name = "time_mark", nullable = false)
     private LocalDateTime timeMark;
 }

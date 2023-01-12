@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "onetime_schedule")
-public class OneTimeScheduleEntity {
+public class OneTimeScheduleEntity extends ScheduleEntity {
     public OneTimeScheduleEntity() {
     }
 

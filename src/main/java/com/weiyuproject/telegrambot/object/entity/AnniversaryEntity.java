@@ -1,7 +1,6 @@
 package com.weiyuproject.telegrambot.object.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -9,7 +8,7 @@ import java.time.LocalDate;
 @Data
 @Entity
 @Table(name = "anniversary")
-public class AnniversaryEntity {
+public class AnniversaryEntity extends ScheduleEntity {
     public AnniversaryEntity(){}
     public AnniversaryEntity(Long userId, String name, LocalDate date) {
         this.name = name;

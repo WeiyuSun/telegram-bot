@@ -1,6 +1,6 @@
 package com.weiyuproject.telegrambot.utils;
 
-import com.weiyuproject.telegrambot.entity.Subscriber;
+import com.weiyuproject.telegrambot.object.dto.Subscriber;
 
 public class UserStateUtil {
     private UserStateUtil(){}

@@ -1,4 +1,4 @@
-package com.weiyuproject.telegrambot.entity;
+package com.weiyuproject.telegrambot.object.dto;
 
 import lombok.Data;
 

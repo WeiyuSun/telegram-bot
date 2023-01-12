@@ -1,4 +1,4 @@
-package com.weiyuproject.telegrambot.dao;
+package com.weiyuproject.telegrambot.object.dao;
 
 import com.weiyuproject.telegrambot.object.entity.AnniversaryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,8 +1,8 @@
 package com.weiyuproject.telegrambot;
 
-import com.weiyuproject.telegrambot.dao.AnniversaryDao;
-import com.weiyuproject.telegrambot.dao.OneTimeScheduleDao;
-import com.weiyuproject.telegrambot.dao.WeeklyScheduleDao;
+import com.weiyuproject.telegrambot.object.dao.AnniversaryDao;
+import com.weiyuproject.telegrambot.object.dao.OneTimeScheduleDao;
+import com.weiyuproject.telegrambot.object.dao.WeeklyScheduleDao;
 import com.weiyuproject.telegrambot.object.entity.AnniversaryEntity;
 import com.weiyuproject.telegrambot.object.entity.OneTimeScheduleEntity;
 import com.weiyuproject.telegrambot.object.entity.WeeklyScheduleEntity;

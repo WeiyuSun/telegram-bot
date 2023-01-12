@@ -1,120 +1,87 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
-import com.weiyuproject.telegrambot.entity.*;
+import com.weiyuproject.telegrambot.object.dao.SubscriberDao;
+import com.weiyuproject.telegrambot.object.entity.SubscriberEntity;
 import com.weiyuproject.telegrambot.service.SubscriberService;
+import com.weiyuproject.telegrambot.utils.UserStateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.SQLException;
+import java.util.List;
 
 @Service
 public class SubscriberServiceImpl implements SubscriberService {
-    private Map<Long, Subscriber> subscribers = new HashMap<>();
-
-
-    @Override public Map<Long, Subscriber> getSubscriberList() {
-        return subscribers;
-    }
-
+    @Autowired
+    private SubscriberDao subscriberDao;
     @Override
     public boolean removeSubscriber(Long userID) {
-        if(subscribers.containsKey(userID)){
-            subscribers.remove(userID);
-            return true;
-        }
-
+        subscriberDao.deleteById(userID);
         return false;
     }
 
     @Override
-    public boolean removeSubscriber(Subscriber user) {
-        if(user.getId() != null){
-            return removeSubscriber(user.getId());
-        }
+    public boolean removeSubscriber(SubscriberEntity user) {
+        if(user == null || user.getUserID() == null)
+            return false;
+
+        return removeSubscriber(user.getUserID());
+    }
+
+    @Override
+    public SubscriberEntity getSubscriber(Long userID) {
+        return subscriberDao.getSubscriberByUserID(userID);
+    }
+
+    @Override
+    public List<SubscriberEntity> getSubscribersByTimeOffset(Integer timeOffset) {
+        return subscriberDao.getSubscribersByTimeOffset(timeOffset);
+    }
+
+    @Override
+    public boolean add(SubscriberEntity subscriber) {
+        subscriberDao.save(subscriber);
         return false;
     }
 
-    @Override public Subscriber getSubscriber(Long userID) {
-        return subscribers.get(userID);
-    }
-    @Override
-    public Subscriber getSubscriber(Subscriber subscriber) {
-        return subscribers.get(subscriber.getId());
-    }
-    @Override public void add(Subscriber subscriber) {subscribers.put(subscriber.getId(), subscriber);}
-    @Override public boolean contains(Long id) {
-        return subscribers.containsKey(id);
-    }
-
-    private boolean addOnetimeSchedule(Long userID, OneTimeSchedule oneTimeSchedule) {
-        Subscriber subscriber = subscribers.get(userID);
-
-        if(subscriber == null)
-            return false;
-
-        if(subscriber.getOneTimeEvents() == null){
-            subscriber.setOneTimeEvents(new ArrayList<>());
-        }
-
-        subscriber.getOneTimeEvents().add(oneTimeSchedule);
-        for(OneTimeSchedule oneTimeSchedule1: subscriber.getOneTimeEvents() ){
-            System.out.println(oneTimeSchedule1.getName() + " " + oneTimeSchedule1.getScheduleTime());
-        }
-        return true;
-    }
-
-    private boolean addAnniversary(Long userID, Anniversary anniversary) {
-        Subscriber subscriber = subscribers.get(userID);
-
-        if(subscriber == null)
-            return false;
-
-        if(subscriber.getAnniversaries() == null)
-            subscriber.setAnniversaries(new ArrayList<>());
-
-        subscriber.getAnniversaries().add(anniversary);
-
-        for(Anniversary anniversary1: subscriber.getAnniversaries() ){
-            System.out.println(anniversary1.getName() + " " + anniversary1.getAnniversaryDate());
-        }
-        return true;
-    }
-
-    private boolean addWeeklySchedule(Long userID, WeeklySchedule weeklySchedule){
-        Subscriber subscriber = subscribers.get(userID);
-
-        if(subscriber == null)
-            return false;
-
-        if(subscriber.getWeeklyEvents() == null)
-            subscriber.setWeeklyEvents(new ArrayList<>());
-
-        subscriber.getWeeklyEvents().add(weeklySchedule);
-        for(WeeklySchedule weeklySchedule1: subscriber.getWeeklyEvents() ){
-            System.out.println(weeklySchedule1.getName() + " " + weeklySchedule1.getScheduleTime());
-        }
-        return true;
-    }
 
     @Override
-    public boolean addSchedule(Long userID, Schedule schedule) {
-        if(schedule instanceof OneTimeSchedule)
-            return addOnetimeSchedule(userID, (OneTimeSchedule) schedule);
-        else if(schedule instanceof WeeklySchedule)
-            return addWeeklySchedule(userID, (WeeklySchedule) schedule);
-        else
-            return addAnniversary(userID, (Anniversary) schedule);
+    public boolean contains(Long id) {
+        return subscriberDao.getSubscriberByUserID(id) != null;
     }
 
     @Override
     public boolean setUserState(Long userId, Integer state) {
-        Subscriber subscriber = subscribers.get(userId);
-
-        if(subscriber == null)
+        if (!isStateValid(state))
             return false;
+        return subscriberDao.updateStateById(userId, state) > 0;
+    }
 
-        subscriber.setUserState(state);
-        return true;
+    @Override
+    public boolean updateSubscriber(SubscriberEntity subscriber) {
+        Integer result = 0;
+        try{
+            result = subscriberDao.updateSubscriberById(subscriber);
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
+        return  result > 0;
+    }
+
+    @Override
+    public void setWeatherService(Long useID, boolean enable) {
+        subscriberDao.updateEnableWeatherServiceById(useID, enable);
+    }
+
+    @Override
+    public void setQuoteService(Long userID, boolean enable) {
+        subscriberDao.updateEnableQuoteServiceById(userID, enable);
+    }
+
+    private boolean isStateValid(Integer state) {
+        return UserStateUtil.WAITING_EVENT_NAME == state || UserStateUtil.OK == state
+                || UserStateUtil.WAITING_LOCATION_MESSAGE == state;
     }
 }

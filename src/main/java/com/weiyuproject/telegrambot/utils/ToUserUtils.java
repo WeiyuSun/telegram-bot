@@ -160,7 +160,7 @@ public class ToUserUtils {
             }
         }
 
-        InlineKeyboardButton cancelButton = ToUserUtils.getInlineButton("Cancel", TelegramCommands.CALLBACK_CANCEL);
+        InlineKeyboardButton cancelButton = ToUserUtils.getInlineButton("Cancel", TelegramCommands.CALLBACK_SCHEDULE_CANCEL);
         InlineKeyboardButton confirmButton = ToUserUtils.getInlineButton("Confirm", String.format("%s`%d`%d`%d`%d`%s", TelegramCommands.CALLBACK_CONFIRM_DATE, scheduleType, targetDay.getYear(), targetDay.getMonthValue(), targetDay.getDayOfMonth(), scheduleName));
 
         // TODO: change year button

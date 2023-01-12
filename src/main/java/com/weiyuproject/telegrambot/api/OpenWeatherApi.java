@@ -1,7 +1,7 @@
 package com.weiyuproject.telegrambot.api;
 
 import com.alibaba.fastjson.JSONObject;
-import com.weiyuproject.telegrambot.entity.Weather;
+import com.weiyuproject.telegrambot.object.dto.Weather;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ public class OpenWeatherApi {
     @Autowired
     private RestTemplate restTemplate;
 
-    public Weather getTodayWeather(Double latitude, Double longitude) {
+    public Weather getTodayWeather(Double longitude, Double latitude) {
         JSONObject result = restTemplate.getForObject(weatherUrl, JSONObject.class, latitude.toString(), longitude.toString());
         String detail = result.getJSONArray("weather").getJSONObject(0).getString("description");
         Integer minTemp = result.getJSONObject("main").getInteger("temp_min") - 273;
@@ -32,7 +32,7 @@ public class OpenWeatherApi {
         return weather;
     }
 
-    public String getCity(Double latitude, Double longitude) {
+    public String getCity(Double longitude, Double latitude) {
         JSONObject[] result = restTemplate.getForObject(cityUrl, JSONObject[].class, latitude, longitude);
         System.out.println(
                 result[0]);
