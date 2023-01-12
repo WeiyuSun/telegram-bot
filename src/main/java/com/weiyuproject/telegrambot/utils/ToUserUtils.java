@@ -1,5 +1,6 @@
 package com.weiyuproject.telegrambot.utils;
 
+import org.checkerframework.checker.units.qual.K;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -12,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ToUserUtils {
@@ -45,6 +47,27 @@ public class ToUserUtils {
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
     }
+
+    public static KeyboardRow getKeyBoardRow(KeyboardButton... buttons){
+        return new KeyboardRow(Arrays.stream(buttons).toList());
+    }
+
+    public static KeyboardRow getKeyBoardRow(String... buttons) {
+        KeyboardRow keyboardRow = new KeyboardRow();
+
+        for (String button : buttons) {
+            keyboardRow.add(new KeyboardButton(button));
+        }
+
+        return keyboardRow;
+    }
+
+    public static List<KeyboardRow> getKeyboardRows(KeyboardRow... rows){
+        return Arrays.stream(rows).toList();
+    }
+
+
+
 
     public static List<List<InlineKeyboardButton>> inlineTimeKeyboardRows(int hour, int minute, String scheduleInfo) {
         List<List<InlineKeyboardButton>> inlineRows = new ArrayList<>();

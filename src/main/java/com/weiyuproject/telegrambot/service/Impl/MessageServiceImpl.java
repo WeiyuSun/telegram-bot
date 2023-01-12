@@ -75,7 +75,7 @@ public class MessageServiceImpl implements MessageService {
         Long userID = message.getChatId();
 
         switch (text) {
-            case TelegramCommands.START: //1349759680
+            case TelegramCommands.START:
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getRequestLocationButtonMessage(userID, "Share Location", "🎉Welcome to here."));
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "I am a robot that is used to send daily messages to provide convince for your life."));
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "If you want more features, I sincerely invite you to become my subscriber."));
