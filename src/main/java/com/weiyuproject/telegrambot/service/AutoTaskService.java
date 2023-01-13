@@ -1,7 +1,5 @@
 package com.weiyuproject.telegrambot.service;
 
-import org.springframework.scheduling.annotation.Scheduled;
-
 public interface AutoTaskService {
 
 

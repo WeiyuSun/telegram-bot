@@ -1,19 +1,18 @@
 package com.weiyuproject.telegrambot.object.dao;
 import com.weiyuproject.telegrambot.object.entity.SubscriberEntity;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.SQLException;
 import java.util.List;
 
 public interface SubscriberDao extends JpaRepository<SubscriberEntity, Long> {
     List<SubscriberEntity> getSubscribersByTimeOffset(Integer timeOffset);
 
     SubscriberEntity getSubscriberByUserID(Long id);
+
+    // TODO: build global exceptions handler
     @Transactional
     @Modifying
     @Query(value = "UPDATE telegram_bot.subscriber set city = :#{#subscriber.getCity()}, time_offset = :#{#subscriber.getTimeOffset()}, latitude = :#{#subscriber.getLatitude()}, longitude = :#{#subscriber.getLongitude()}, enable_quote_service = :#{#subscriber.getEnableQuoteService()}, enable_weather_service = :#{#subscriber.getEnableWeatherService()} WHERE userid = :#{#subscriber.getUserID()}", nativeQuery = true)
