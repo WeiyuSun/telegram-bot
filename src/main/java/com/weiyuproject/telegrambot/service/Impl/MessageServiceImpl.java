@@ -2,9 +2,10 @@ package com.weiyuproject.telegrambot.service.Impl;
 
 import com.weiyuproject.telegrambot.api.GoogleApi;
 import com.weiyuproject.telegrambot.api.OpenWeatherApi;
-import com.weiyuproject.telegrambot.object.entity.SubscriberEntity;
+import com.weiyuproject.telegrambot.object.entity.*;
 import com.weiyuproject.telegrambot.service.MessageService;
 import com.weiyuproject.telegrambot.service.ReceiveAndSendService;
+import com.weiyuproject.telegrambot.service.ScheduleService;
 import com.weiyuproject.telegrambot.service.SubscriberService;
 import com.weiyuproject.telegrambot.utils.ScheduleUtils;
 import com.weiyuproject.telegrambot.utils.TelegramCommands;
@@ -13,12 +14,12 @@ import com.weiyuproject.telegrambot.utils.UserStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,6 +30,8 @@ public class MessageServiceImpl implements MessageService {
     private String accessToken;
     @Autowired
     private SubscriberService subscriberService;
+    @Autowired
+    private ScheduleService scheduleService;
     @Autowired
     private OpenWeatherApi openWeatherApi;
     @Autowired
@@ -123,6 +126,37 @@ public class MessageServiceImpl implements MessageService {
                 subscriberService.setUserState(userID, UserStateUtil.WAITING_EVENT_NAME);
                 receiveAndSendService.sendMessageToTelegram(ToUserUtils.getTextMessage(userID, "What the name of your new schedule/event?"));
                 break;
+            case TelegramCommands.DROP_SCHEDULE: {
+                List<ScheduleEntity> allSchedules = scheduleService.getAllSchedules(userID);
+                for(ScheduleEntity schedule: allSchedules){
+                    System.out.println(schedule);
+                }
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userID);
+                sendMessage.setText("Which schedule you want to drop?🤔");
+                List<List<InlineKeyboardButton>> buttonsRows = new ArrayList<>();
+                for (ScheduleEntity schedule : allSchedules) {
+                    String buttonContent = null;
+                    String callBack = null;
+                    if (schedule instanceof OneTimeScheduleEntity) {
+                        buttonContent = ((OneTimeScheduleEntity) schedule).getName() + " at " + ((OneTimeScheduleEntity) schedule).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                        callBack = String.format("%s`%d", TelegramCommands.CALLBACK_DROP_ONETIME_SCHEDULE, ((OneTimeScheduleEntity) schedule).getId());
+                    } else if(schedule instanceof WeeklyScheduleEntity) {
+                        buttonContent = ((WeeklyScheduleEntity) schedule).getName() + " on " + ((WeeklyScheduleEntity) schedule).getTimeMark().getDayOfWeek().toString().toLowerCase();
+                        callBack = String.format("%s`%d", TelegramCommands.CALLBACK_DROP_WEEKLY_SCHEDULE, ((WeeklyScheduleEntity) schedule).getId());
+                    } else if(schedule instanceof AnniversaryEntity) {
+                        buttonContent = ((AnniversaryEntity) schedule).getName() + " at " + ((AnniversaryEntity) schedule).getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        callBack = String.format("%s`%d", TelegramCommands.CALLBACK_DROP_ANNIVERSARY, ((AnniversaryEntity) schedule).getId());
+                    }
+
+                    buttonsRows.add(ToUserUtils.getInlineButtonsRow(ToUserUtils.getInlineButton(buttonContent, callBack)));
+                }
+                sendMessage.setReplyMarkup(new InlineKeyboardMarkup(buttonsRows));
+                receiveAndSendService.sendMessageToTelegram(sendMessage);
+                break;
+            }
+
+
             case default:
                 if (UserStateUtil.WAITING_EVENT_NAME == subscriber.getUserState()) {
                     SendMessage sendMessage = new SendMessage();
@@ -168,7 +202,7 @@ public class MessageServiceImpl implements MessageService {
         user.setCity(openWeatherApi.getCity(user.getLongitude(), user.getLatitude()));
         user.setTimeOffset(googleApi.getTimeOffset(user.getLongitude(), user.getLatitude()));
 
-        if(!subscriberService.updateSubscriber(user)){
+        if (!subscriberService.updateSubscriber(user)) {
             feedbackMessage = "Sorry, current location is not available...";
         }
 

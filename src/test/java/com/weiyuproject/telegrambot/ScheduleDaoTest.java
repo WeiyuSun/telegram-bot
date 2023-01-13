@@ -50,4 +50,9 @@ public class ScheduleDaoTest {
         System.out.println(oneTimeScheduleDao.getSchedulesByUserId(123123L));
         System.out.println(weeklyScheduleDao.getSchedulesByUserId(123123L));
     }
+
+    @Test
+    public void testGetAll(){
+
+    }
 }

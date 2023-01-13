@@ -37,12 +37,10 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
         String callbackData = callbackQuery.getData();
         String[] callbackTokens = callbackData.split("`");
         switch (callbackTokens[0]) {
-            case TelegramCommands.CALLBACK_SCHEDULE_TYPE: {
+            case TelegramCommands.CALLBACK_SCHEDULE_TYPE -> {
                 processScheduleTypeCallback(callbackQuery, callbackTokens, subscriber);
-                break;
             }
-
-            case TelegramCommands.CALLBACK_CHANGE_MONTH: {
+            case TelegramCommands.CALLBACK_CHANGE_MONTH -> {
                 // 0 command, 1 changed value,  2 schedule type, 3 year, 4 month, 5 schedule name
                 LocalDate firstDayOfMonth = LocalDate.of(Integer.parseInt(callbackTokens[3]), Integer.parseInt(callbackTokens[4]), 1).plusMonths(Integer.parseInt(callbackTokens[1]));
                 EditMessageReplyMarkup toNextMonthMarkup = new EditMessageReplyMarkup();
@@ -50,10 +48,8 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 toNextMonthMarkup.setChatId(callbackQuery.getMessage().getChatId());
                 toNextMonthMarkup.setMessageId(callbackQuery.getMessage().getMessageId());
                 receiveAndSendService.sendMessageToTelegram(toNextMonthMarkup);
-                break;
             }
-
-            case TelegramCommands.CALLBACK_CHANGE_DAY: {
+            case TelegramCommands.CALLBACK_CHANGE_DAY -> {
                 // 0 command, 1 schedule type, 2 year, 3 month, 4 day, 5 schedule name
                 LocalDate selectedDay = LocalDate.of(Integer.parseInt(callbackTokens[2]), Integer.parseInt(callbackTokens[3]), Integer.parseInt(callbackTokens[4]));
                 LocalDate fistDayOfMonth = LocalDate.of(selectedDay.getYear(), selectedDay.getMonthValue(), 1);
@@ -64,10 +60,8 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 editMessageReplyMarkup.setChatId(callbackQuery.getMessage().getChatId());
                 editMessageReplyMarkup.setMessageId(callbackQuery.getMessage().getMessageId());
                 receiveAndSendService.sendMessageToTelegram(editMessageReplyMarkup);
-                break;
             }
-
-            case TelegramCommands.CALLBACK_CONFIRM_WEEK: {
+            case TelegramCommands.CALLBACK_CONFIRM_WEEK -> {
                 // 0 command, 1 type, 2 year, 3 month, 4 day, 5 name
                 String scheduleInfo = callbackTokens[1] + "`" + callbackTokens[2] + "`" + callbackTokens[3] + "`" + callbackTokens[4] + "`" + callbackTokens[5];
                 EditMessageText editMessageText = ToUserUtils.getEditMessageText(
@@ -77,10 +71,8 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                         new InlineKeyboardMarkup(ToUserUtils.inlineTimeKeyboardRows(12, 30, scheduleInfo))
                 );
                 receiveAndSendService.sendMessageToTelegram(editMessageText);
-                break;
             }
-
-            case TelegramCommands.CALLBACK_CONFIRM_DATE: {
+            case TelegramCommands.CALLBACK_CONFIRM_DATE -> {
                 System.out.println(Arrays.toString(callbackTokens));
                 // 0 command, 1 schedule type, 2 year, 3 month, 4 day, 5 schedule name
                 if (Integer.parseInt(callbackTokens[1]) == ScheduleUtils.ANNIVERSARY) {
@@ -101,11 +93,8 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                     );
                     receiveAndSendService.sendMessageToTelegram(editMessageText);
                 }
-
-                break;
             }
-
-            case TelegramCommands.CALLBACK_CHANGE_HR: {
+            case TelegramCommands.CALLBACK_CHANGE_HR -> {
                 // 0 command, 1 hour, 2 minute, 3 hr shift, 4 schedule type, 5 year, 6 month, 7 day, 8 schedule name
                 String scheduleInfo = String.format("%s`%s`%s`%s`%s", callbackTokens[4], callbackTokens[5], callbackTokens[6], callbackTokens[7], callbackTokens[8]);
                 int changedHour = Integer.parseInt(callbackTokens[1]) + Integer.parseInt(callbackTokens[3]);
@@ -120,10 +109,8 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 replyMarkup.setChatId(callbackQuery.getMessage().getChatId());
                 replyMarkup.setMessageId(callbackQuery.getMessage().getMessageId());
                 receiveAndSendService.sendMessageToTelegram(replyMarkup);
-                break;
             }
-
-            case TelegramCommands.CALLBACK_CHANGE_MIN: {
+            case TelegramCommands.CALLBACK_CHANGE_MIN -> {
                 String scheduleInfo = String.format("%s`%s`%s`%s`%s", callbackTokens[4], callbackTokens[5], callbackTokens[6], callbackTokens[7], callbackTokens[8]);
                 // 0 command, 1 hour, 2 minute, 3 min shift, 4 schedule type, 5 year, 6 month, 7 day, 8 schedule name
                 int changedMin = Integer.parseInt(callbackTokens[2]) + Integer.parseInt(callbackTokens[3]);
@@ -140,10 +127,8 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 );
 
                 receiveAndSendService.sendMessageToTelegram(editMessageReplyMarkup);
-                break;
             }
-
-            case TelegramCommands.CALLBACK_SCHEDULE_CONFIRM: {
+            case TelegramCommands.CALLBACK_SCHEDULE_CONFIRM -> {
                 int year = Integer.parseInt(callbackTokens[4]);
                 int month = Integer.parseInt(callbackTokens[5]);
                 int day = Integer.parseInt(callbackTokens[6]);
@@ -165,16 +150,48 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 scheduleService.addSchedule(schedule);
                 EditMessageText editMessageText = ToUserUtils.getEditMessageText("🎉your schedule saved!", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
                 receiveAndSendService.sendMessageToTelegram(editMessageText);
-                break;
             }
 
-            case TelegramCommands.CALLBACK_SCHEDULE_CANCEL:{
+
+            // TODO: implement functions so that user can edit schedulers
+//            case TelegramCommands.CALLBACK_EDIT_ONETIME_SCHEDULE:{
+//
+//                break;
+//            }
+//
+//            case TelegramCommands.CALLBACK_EDIT_ANNIVERSARY:{
+//
+//                break;
+//            }
+//
+//            case TelegramCommands.CALLBACK_EDIT_WEEKLY_SCHEDULE:{
+//                ToUserUtils.get
+//                break;
+//            }
+
+            case TelegramCommands.CALLBACK_DROP_ANNIVERSARY -> {
+                // 0 command, 1 schedule id
+                System.out.println("from abc: " + callbackData);
+                EditMessageText editMessageText = ToUserUtils.getEditMessageText("Schedule has been drop", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
+                receiveAndSendService.sendMessageToTelegram(editMessageText);
+                scheduleService.deleteAnniversary(Long.valueOf(callbackTokens[1]));
+            }
+            case TelegramCommands.CALLBACK_DROP_ONETIME_SCHEDULE -> {
+                System.out.println("from abc: " + callbackData);
+                EditMessageText editMessageText = ToUserUtils.getEditMessageText("Schedule has been drop", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
+                receiveAndSendService.sendMessageToTelegram(editMessageText);
+                scheduleService.deleteOneTimeSchedule(Long.valueOf(callbackTokens[1]));
+            }
+            case TelegramCommands.CALLBACK_DROP_WEEKLY_SCHEDULE -> {
+                System.out.println("from abc: " + callbackData);
+                EditMessageText editMessageText = ToUserUtils.getEditMessageText("Schedule has been drop", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
+                receiveAndSendService.sendMessageToTelegram(editMessageText);
+                scheduleService.deleteWeeklySchedule(Long.valueOf(callbackTokens[1]));
+            }
+            case TelegramCommands.CALLBACK_SCHEDULE_CANCEL -> {
                 EditMessageText editMessageText = ToUserUtils.getEditMessageText("Your schedule cancelled", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
                 receiveAndSendService.sendMessageToTelegram(editMessageText);
-                break;
             }
-
-
         }
 
 

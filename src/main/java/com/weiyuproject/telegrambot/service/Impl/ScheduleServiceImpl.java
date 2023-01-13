@@ -10,7 +10,7 @@ import com.weiyuproject.telegrambot.object.entity.WeeklyScheduleEntity;
 import com.weiyuproject.telegrambot.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +21,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     private OneTimeScheduleDao oneTimeScheduleDao;
     @Autowired
     private WeeklyScheduleDao weeklyScheduleDao;
+
     @Override
     public boolean addAnniversary(AnniversaryEntity anniversary) {
         anniversaryDao.save(anniversary);
@@ -40,6 +41,24 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
+    public boolean deleteWeeklySchedule(Long scheduleID) {
+        weeklyScheduleDao.deleteById(scheduleID);
+        return true;
+    }
+
+    @Override
+    public boolean deleteOneTimeSchedule(Long scheduleID) {
+        oneTimeScheduleDao.deleteById(scheduleID);
+        return true;
+    }
+
+    @Override
+    public boolean deleteAnniversary(Long scheduleID) {
+        anniversaryDao.deleteById(scheduleID);
+        return true;
+    }
+
+    @Override
     public List<OneTimeScheduleEntity> getOnetimeSchedules(Long userID) {
         return oneTimeScheduleDao.getSchedulesByUserId(userID);
     }
@@ -54,15 +73,31 @@ public class ScheduleServiceImpl implements ScheduleService {
         return anniversaryDao.getAnniversariesByUserId(userID);
     }
 
-    public boolean addSchedule(ScheduleEntity schedule){
-        if(schedule instanceof OneTimeScheduleEntity){
+    public boolean addSchedule(ScheduleEntity schedule) {
+        if (schedule instanceof OneTimeScheduleEntity) {
             return addOneTimeSchedule((OneTimeScheduleEntity) schedule);
-        } else if(schedule instanceof AnniversaryEntity){
+        } else if (schedule instanceof AnniversaryEntity) {
             return addAnniversary((AnniversaryEntity) schedule);
         } else if (schedule instanceof WeeklyScheduleEntity) {
             return addWeeklySchedule((WeeklyScheduleEntity) schedule);
         }
 
         return false;
+    }
+
+    @Override
+    public List<ScheduleEntity> getAllSchedules(Long userID) {
+        List<ScheduleEntity> allSchedules = new ArrayList<>();
+        List<OneTimeScheduleEntity> oneTimeScheduleEntities = getOnetimeSchedules(userID);
+        List<WeeklyScheduleEntity> weeklyScheduleEntities = getWeeklySchedules(userID);
+        List<AnniversaryEntity> anniversaryEntities = getAnniversaries(userID);
+
+
+        //String message = oneTimeSchedule.getName() + " at " + oneTimeSchedule.getTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+        allSchedules.addAll(oneTimeScheduleEntities);
+        allSchedules.addAll(weeklyScheduleEntities);
+        allSchedules.addAll(anniversaryEntities);
+
+        return allSchedules;
     }
 }
