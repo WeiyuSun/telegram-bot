@@ -6,6 +6,7 @@ import com.weiyuproject.telegrambot.object.dto.WeatherDto;
 import com.weiyuproject.telegrambot.object.entity.*;
 import com.weiyuproject.telegrambot.service.DailyMessageService;
 import com.weiyuproject.telegrambot.service.ScheduleService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,7 @@ public class DailyMessageServiceImpl implements DailyMessageService {
         if (user.getEnableQuoteService())
             todayMessages.add(quote);
 
-        List<AnniversaryEntity> anniversaryList = scheduleService.getAnniversaries(user.getUserID());
+//        List<AnniversaryEntity> anniversaryList = scheduleService.getAnniversaries(user.getUserID());
         List<WeeklyScheduleEntity> weeklyScheduleList = scheduleService.getWeeklySchedules(user.getUserID());
         List<OneTimeScheduleEntity> oneTimeScheduleList = scheduleService.getOnetimeSchedules(user.getUserID());
 
@@ -52,13 +53,19 @@ public class DailyMessageServiceImpl implements DailyMessageService {
             }
         }
 
+        List<Long> oldScheduleIds = new ArrayList<>();
         for (OneTimeScheduleEntity oneTimeSchedule : oneTimeScheduleList) {
             if (oneTimeSchedule.getTime().getMonthValue() == today.getMonthValue() &&
                     oneTimeSchedule.getTime().getDayOfMonth() == today.getDayOfMonth() &&
                     oneTimeSchedule.getTime().getYear() == today.getYear()) {
                 scheduleMessage.add(new String[]{oneTimeSchedule.getName(), oneTimeSchedule.getTime().getHour() + ":" + oneTimeSchedule.getTime().getMinute()});
+                oldScheduleIds.add(oneTimeSchedule.getId());
             }
         }
+
+        // one time schedule have prepare to pushed, delete the data from database now.
+        // TODO: multithreading can apply here
+        scheduleService.deleteOneTimeSchedules(oldScheduleIds);
 
         if(scheduleMessage.size() > 0){
             todayMessages.add("\uD83E\uDD3AToday's schedule:");

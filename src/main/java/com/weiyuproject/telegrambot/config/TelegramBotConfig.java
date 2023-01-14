@@ -17,9 +17,12 @@ public class TelegramBotConfig {
     @Value("${telegram.config.accessToken}")
     private String accessToken;
 
+    @Value("${telegram.config.webhookUrl}")
+    private String webhookUrl;
+
     @Bean
     public SetWebhook setWebhookInstance() {
-        return SetWebhook.builder().url("https://3975-2604-3d09-aa7c-87c0-c3f-bd9b-adef-6fe8.ngrok.io").build();
+        return SetWebhook.builder().url(webhookUrl).build();
     } // public address, now it is ngrok, in the future it will (i think) be the server address
     // Create it as
     @Bean

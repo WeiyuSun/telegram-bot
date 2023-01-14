@@ -58,6 +58,13 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
+    @Transactional
+    public boolean deleteOneTimeSchedules(List<Long> ids){
+        oneTimeScheduleDao.deleteOneTimeScheduleEntitiesByIdIn(ids);
+        return true;
+    }
+
+    @Override
     public List<OneTimeScheduleEntity> getOnetimeSchedules(Long userID) {
         return oneTimeScheduleDao.getSchedulesByUserId(userID);
     }

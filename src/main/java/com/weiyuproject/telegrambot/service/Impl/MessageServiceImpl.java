@@ -12,9 +12,7 @@ import com.weiyuproject.telegrambot.utils.TelegramCommands;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
 import com.weiyuproject.telegrambot.utils.UserStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -123,9 +121,7 @@ public class MessageServiceImpl implements MessageService {
                 break;
             case TelegramCommands.DROP_SCHEDULE: {
                 List<ScheduleEntity> allSchedules = scheduleService.getAllSchedules(userID);
-                for(ScheduleEntity schedule: allSchedules){
-                    System.out.println(schedule);
-                }
+
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(userID);
                 sendMessage.setText("Which schedule you want to drop?🤔");
@@ -180,7 +176,6 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void processLocationMessage(Message message) {
-        System.out.println("from processLocationMessage: " + message);
         Long userID = message.getChatId();
         UserEntity user = userService.getUser(userID);
 

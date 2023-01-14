@@ -23,7 +23,6 @@ public class ReceiveAndSendServiceImpl implements ReceiveAndSendService {
 
     @Override
     public void processUpdateFromTelegram(Update update) {
-        System.out.println("get update: " + update);
         if (update.hasMessage()) {
             messageService.processMessageFromTelegram(update.getMessage());
 //            subscriberService.getSubscriber(update.getMessage().getChatId()).setUserState(UserStateUtil.OK);

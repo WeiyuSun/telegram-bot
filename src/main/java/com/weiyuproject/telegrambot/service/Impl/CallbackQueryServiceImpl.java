@@ -70,7 +70,6 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
                 receiveAndSendService.sendMessageToTelegram(editMessageText);
             }
             case TelegramCommands.CALLBACK_CONFIRM_DATE -> {
-                System.out.println(Arrays.toString(callbackTokens));
                 // 0 command, 1 schedule type, 2 year, 3 month, 4 day, 5 schedule name
                 if (Integer.parseInt(callbackTokens[1]) == ScheduleUtils.ANNIVERSARY) {
                     LocalDate anniversaryDate = LocalDate.of(Integer.parseInt(callbackTokens[2]), Integer.parseInt(callbackTokens[3]), Integer.parseInt(callbackTokens[4]));
@@ -168,19 +167,16 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
 
             case TelegramCommands.CALLBACK_DROP_ANNIVERSARY -> {
                 // 0 command, 1 schedule id
-                System.out.println("from abc: " + callbackData);
                 EditMessageText editMessageText = ToUserUtils.getEditMessageText("Schedule has been drop", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
                 receiveAndSendService.sendMessageToTelegram(editMessageText);
                 scheduleService.deleteAnniversary(Long.valueOf(callbackTokens[1]));
             }
             case TelegramCommands.CALLBACK_DROP_ONETIME_SCHEDULE -> {
-                System.out.println("from abc: " + callbackData);
                 EditMessageText editMessageText = ToUserUtils.getEditMessageText("Schedule has been drop", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
                 receiveAndSendService.sendMessageToTelegram(editMessageText);
                 scheduleService.deleteOneTimeSchedule(Long.valueOf(callbackTokens[1]));
             }
             case TelegramCommands.CALLBACK_DROP_WEEKLY_SCHEDULE -> {
-                System.out.println("from abc: " + callbackData);
                 EditMessageText editMessageText = ToUserUtils.getEditMessageText("Schedule has been drop", callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getMessageId(), null);
                 receiveAndSendService.sendMessageToTelegram(editMessageText);
                 scheduleService.deleteWeeklySchedule(Long.valueOf(callbackTokens[1]));

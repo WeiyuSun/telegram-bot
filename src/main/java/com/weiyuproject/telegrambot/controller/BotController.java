@@ -15,7 +15,6 @@ public class BotController {
 
     @PostMapping("/callback/daily_robot")
     public void receiveUpdateFromTelegram(@RequestBody Update update){
-        System.out.println("get update " + update);
         receiveAndSendService.processUpdateFromTelegram(update);
     }
 

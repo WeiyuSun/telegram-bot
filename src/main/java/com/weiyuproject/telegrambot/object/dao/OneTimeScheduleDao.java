@@ -8,4 +8,5 @@ import java.util.List;
 public interface OneTimeScheduleDao extends JpaRepository<OneTimeScheduleEntity, Long> {
     List<OneTimeScheduleEntity> getSchedulesByUserId(Long userID);
     void removeAllByUserId(Long userID);
+    void deleteOneTimeScheduleEntitiesByIdIn(List<Long> ids);
 }
