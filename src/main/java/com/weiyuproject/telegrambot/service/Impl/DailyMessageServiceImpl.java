@@ -2,54 +2,47 @@ package com.weiyuproject.telegrambot.service.Impl;
 
 import com.weiyuproject.telegrambot.api.OpenWeatherApi;
 import com.weiyuproject.telegrambot.api.TianxingApi;
-import com.weiyuproject.telegrambot.object.dto.Weather;
+import com.weiyuproject.telegrambot.object.dto.WeatherDto;
 import com.weiyuproject.telegrambot.object.entity.*;
 import com.weiyuproject.telegrambot.service.DailyMessageService;
 import com.weiyuproject.telegrambot.service.ScheduleService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
 
 @Service
 public class DailyMessageServiceImpl implements DailyMessageService {
 
-    @Autowired
-    private OpenWeatherApi openWeatherApi;
-    @Autowired
-    private TianxingApi tianxingApi;
-
-    @Autowired
-    private ScheduleService scheduleService;
+    @Autowired private OpenWeatherApi openWeatherApi;
+    @Autowired private TianxingApi tianxingApi;
+    @Autowired private ScheduleService scheduleService;
 
     @Override
-    public List<String> getDailyMessages(SubscriberEntity subscriber) {
-        LocalDateTime today = LocalDateTime.now().plusHours(subscriber.getTimeOffset());
+    public List<String> getDailyMessages(UserEntity user) {
+        LocalDateTime today = LocalDateTime.now().plusHours(user.getTimeOffset());
 
         List<String> todayMessages = new ArrayList<>();
         String quote = tianxingApi.getTodayQuote();
         todayMessages.add("\uD83D\uDD06Good morning^-^");
-        todayMessages.add("Your are in " + subscriber.getCity());
-        if (subscriber.getEnableWeatherService()) {
-            Weather weather = openWeatherApi.getTodayWeather(subscriber.getLongitude(), subscriber.getLatitude());
+        todayMessages.add("Your are in " + user.getCity());
+        if (user.getEnableWeatherService()) {
+            WeatherDto weatherDto = openWeatherApi.getTodayWeather(user.getLongitude(), user.getLatitude());
 
-            String weatherInf = "Temperature: " + weather.getMinTemperature() + "°C ~ " + weather.getMaxTemperature() + "°C" +
-                    "\nApparent temperature: " + weather.getFeelTemperature() + "°C\nWeather: " + weather.getDetail() + "\n";
+            String weatherInf = "Temperature: " + weatherDto.getMinTemperature() + "°C ~ " + weatherDto.getMaxTemperature() + "°C" +
+                    "\nApparent temperature: " + weatherDto.getFeelTemperature() + "°C\nWeather: " + weatherDto.getDetail() + "\n";
             todayMessages.add(weatherInf);
         }
 
 
-        if (subscriber.getEnableQuoteService())
+        if (user.getEnableQuoteService())
             todayMessages.add(quote);
 
-        List<AnniversaryEntity> anniversaryList = scheduleService.getAnniversaries(subscriber.getUserID());
-        List<WeeklyScheduleEntity> weeklyScheduleList = scheduleService.getWeeklySchedules(subscriber.getUserID());
-        List<OneTimeScheduleEntity> oneTimeScheduleList = scheduleService.getOnetimeSchedules(subscriber.getUserID());
+        List<AnniversaryEntity> anniversaryList = scheduleService.getAnniversaries(user.getUserID());
+        List<WeeklyScheduleEntity> weeklyScheduleList = scheduleService.getWeeklySchedules(user.getUserID());
+        List<OneTimeScheduleEntity> oneTimeScheduleList = scheduleService.getOnetimeSchedules(user.getUserID());
 
         List<String[]> scheduleMessage = new ArrayList<>();
 

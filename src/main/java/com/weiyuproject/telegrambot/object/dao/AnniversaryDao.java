@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AnniversaryDao extends JpaRepository<AnniversaryEntity, Long> {
     List<AnniversaryEntity> getAnniversariesByUserId(Long userID);
+    void removeAllByUserId(Long userID);
 }

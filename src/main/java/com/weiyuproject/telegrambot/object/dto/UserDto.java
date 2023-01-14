@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Subscriber {
+public class UserDto {
     private Long id;
     private String city;
     private Double longitude;

@@ -1,7 +1,7 @@
 package com.weiyuproject.telegrambot.api;
 
 import com.alibaba.fastjson.JSONObject;
-import com.weiyuproject.telegrambot.object.dto.Weather;
+import com.weiyuproject.telegrambot.object.dto.WeatherDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,19 +17,19 @@ public class OpenWeatherApi {
     @Autowired
     private RestTemplate restTemplate;
 
-    public Weather getTodayWeather(Double longitude, Double latitude) {
+    public WeatherDto getTodayWeather(Double longitude, Double latitude) {
         JSONObject result = restTemplate.getForObject(weatherUrl, JSONObject.class, latitude.toString(), longitude.toString());
         String detail = result.getJSONArray("weather").getJSONObject(0).getString("description");
         Integer minTemp = result.getJSONObject("main").getInteger("temp_min") - 273;
         Integer maxTemp = result.getJSONObject("main").getInteger("temp_max") - 273;
         Integer feelTemp = result.getJSONObject("main").getInteger("feels_like") - 273;
 
-        Weather weather = new Weather();
-        weather.setDetail(detail);
-        weather.setFeelTemperature(feelTemp);
-        weather.setMaxTemperature(maxTemp);
-        weather.setMinTemperature(minTemp);
-        return weather;
+        WeatherDto weatherDto = new WeatherDto();
+        weatherDto.setDetail(detail);
+        weatherDto.setFeelTemperature(feelTemp);
+        weatherDto.setMaxTemperature(maxTemp);
+        weatherDto.setMinTemperature(minTemp);
+        return weatherDto;
     }
 
     public String getCity(Double longitude, Double latitude) {

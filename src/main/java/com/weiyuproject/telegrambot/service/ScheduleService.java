@@ -5,9 +5,6 @@ import com.weiyuproject.telegrambot.object.entity.OneTimeScheduleEntity;
 import com.weiyuproject.telegrambot.object.entity.ScheduleEntity;
 import com.weiyuproject.telegrambot.object.entity.WeeklyScheduleEntity;
 
-import java.time.DayOfWeek;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 public interface ScheduleService {
@@ -24,4 +21,6 @@ public interface ScheduleService {
     List<AnniversaryEntity> getAnniversaries(Long userID);
     boolean addSchedule(ScheduleEntity schedule);
     List<ScheduleEntity> getAllSchedules(Long userID);
+
+    boolean deleteAllUserSchedule(Long userID);
 }

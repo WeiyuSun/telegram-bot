@@ -4,7 +4,7 @@ import com.weiyuproject.telegrambot.object.entity.*;
 import com.weiyuproject.telegrambot.service.CallbackQueryService;
 import com.weiyuproject.telegrambot.service.ReceiveAndSendService;
 import com.weiyuproject.telegrambot.service.ScheduleService;
-import com.weiyuproject.telegrambot.service.SubscriberService;
+import com.weiyuproject.telegrambot.service.UserService;
 import com.weiyuproject.telegrambot.utils.DateUtils;
 import com.weiyuproject.telegrambot.utils.ScheduleUtils;
 import com.weiyuproject.telegrambot.utils.TelegramCommands;
@@ -24,21 +24,18 @@ import java.util.*;
 
 @Service
 public class CallbackQueryServiceImpl implements CallbackQueryService {
-    @Autowired
-    private ReceiveAndSendService receiveAndSendService;
-    @Autowired
-    private SubscriberService subscriberService;
-
+    @Autowired private ReceiveAndSendService receiveAndSendService;
+    @Autowired private UserService userService;
     @Autowired private ScheduleService scheduleService;
 
     @Override
     public void processCallbackQuery(CallbackQuery callbackQuery) {
-        SubscriberEntity subscriber = subscriberService.getSubscriber(callbackQuery.getMessage().getChatId());
+        UserEntity user = userService.getUser(callbackQuery.getMessage().getChatId());
         String callbackData = callbackQuery.getData();
         String[] callbackTokens = callbackData.split("`");
         switch (callbackTokens[0]) {
             case TelegramCommands.CALLBACK_SCHEDULE_TYPE -> {
-                processScheduleTypeCallback(callbackQuery, callbackTokens, subscriber);
+                processScheduleTypeCallback(callbackQuery, callbackTokens, user);
             }
             case TelegramCommands.CALLBACK_CHANGE_MONTH -> {
                 // 0 command, 1 changed value,  2 schedule type, 3 year, 4 month, 5 schedule name
@@ -197,13 +194,13 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
 
     }
 
-    private void processScheduleTypeCallback(CallbackQuery callbackQuery, String[] callbackTokens, SubscriberEntity subscriber) {
+    private void processScheduleTypeCallback(CallbackQuery callbackQuery, String[] callbackTokens, UserEntity user) {
         // 0 callback command, 1 schedule type, 2 schedule name
         int scheduleType = Integer.parseInt(callbackTokens[1]);
         String scheduleName = callbackTokens[2];
 
         if (ScheduleUtils.ONE_TIME_SCHEDULE == scheduleType || ScheduleUtils.ANNIVERSARY == scheduleType) {
-            LocalDate today = LocalDateTime.now().plusHours(subscriber.getTimeOffset()).toLocalDate();
+            LocalDate today = LocalDateTime.now().plusHours(user.getTimeOffset()).toLocalDate();
             LocalDate firstDayOfMonth = LocalDate.of(today.getYear(), today.getMonthValue(), 1);
             EditMessageText editMessageText = ToUserUtils.getEditMessageText(
                     "What is the date of the schedule?🤔",
@@ -213,7 +210,7 @@ public class CallbackQueryServiceImpl implements CallbackQueryService {
             );
             receiveAndSendService.sendMessageToTelegram(editMessageText);
         } else if (ScheduleUtils.WEEKLY_SCHEDULE == scheduleType) {
-            LocalDateTime localDateTime = LocalDateTime.now().plusHours(subscriber.getTimeOffset());
+            LocalDateTime localDateTime = LocalDateTime.now().plusHours(user.getTimeOffset());
             Map<Integer, InlineKeyboardButton> oneWeekDates = new HashMap<>();
 
             for (int i = 1; i <= 7; i++) {

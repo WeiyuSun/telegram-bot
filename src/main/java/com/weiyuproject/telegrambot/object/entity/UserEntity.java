@@ -9,9 +9,9 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "subscriber")
-public class SubscriberEntity {
-    public SubscriberEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset, Boolean enableWeatherService, Boolean enableQuoteService) {
+@Table(name = "user")
+public class UserEntity {
+    public UserEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset, Boolean enableWeatherService, Boolean enableQuoteService) {
         this.userID = userID;
         this.city = city;
         this.longitude = longitude;
@@ -22,7 +22,7 @@ public class SubscriberEntity {
         userState = UserStateUtil.OK;
     }
 
-    public SubscriberEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset, Boolean enableWeatherService, Boolean enableQuoteService, Integer userState) {
+    public UserEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset, Boolean enableWeatherService, Boolean enableQuoteService, Integer userState) {
         this.userID = userID;
         this.city = city;
         this.longitude = longitude;
@@ -33,7 +33,7 @@ public class SubscriberEntity {
         this.userState = userState;
     }
 
-    public SubscriberEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset) {
+    public UserEntity(Long userID, String city, Double longitude, Double latitude, Integer timeOffset) {
         this.userID = userID;
         this.city = city;
         this.longitude = longitude;
@@ -62,6 +62,6 @@ public class SubscriberEntity {
     @Column(nullable = false, name = "user_state")
     private Integer userState;
 
-    public SubscriberEntity() {
+    public UserEntity() {
     }
 }

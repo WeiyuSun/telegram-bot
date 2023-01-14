@@ -1,6 +1,6 @@
 package com.weiyuproject.telegrambot.service.Impl;
 
-import com.weiyuproject.telegrambot.object.entity.SubscriberEntity;
+import com.weiyuproject.telegrambot.object.entity.UserEntity;
 import com.weiyuproject.telegrambot.robot.DailyMessageBot;
 import com.weiyuproject.telegrambot.service.*;
 import com.weiyuproject.telegrambot.utils.ToUserUtils;
@@ -15,16 +15,11 @@ import java.util.*;
 
 @Service
 public class ReceiveAndSendServiceImpl implements ReceiveAndSendService {
-    @Autowired
-    private SubscriberService subscriberService;
-    @Autowired
-    private MessageService messageService;
-    @Autowired
-    private CallbackQueryService callbackQueryService;
-    @Autowired
-    private DailyMessageService dailyMessageService;
-    @Autowired
-    private DailyMessageBot dailyMessageBot;
+    @Autowired private UserService userService;
+    @Autowired private MessageService messageService;
+    @Autowired private CallbackQueryService callbackQueryService;
+    @Autowired private DailyMessageService dailyMessageService;
+    @Autowired private DailyMessageBot dailyMessageBot;
 
     @Override
     public void processUpdateFromTelegram(Update update) {
@@ -51,28 +46,14 @@ public class ReceiveAndSendServiceImpl implements ReceiveAndSendService {
     }
 
     /**
-     * send message to all subscribers
+     * send message to given users
      */
-//    public void sendDailyMessageToTelegram() {
-//        Map<Long, Subscriber> subscriberList = subscriberService.getSubscriberList();
-//        subscriberList.forEach((chatID, subscriber) -> {
-//            List<String> todayMessages = dailyMessageService.getDailyMessages(subscriber);
-//
-//            for (String message : todayMessages) {
-//                sendMessageToTelegram(ToUserUtils.getTextMessage(chatID, message));
-//            }
-//        });
-//    }
-
-    /**
-     * send message to given subscribers
-     */
-    public void sendDailyMessageToTelegram(List<SubscriberEntity> subscribers) {
-        for (SubscriberEntity subscriber : subscribers) {
-            List<String> todayMessages = dailyMessageService.getDailyMessages(subscriber);
+    public void sendDailyMessageToTelegram(List<UserEntity> users) {
+        for (UserEntity user : users) {
+            List<String> todayMessages = dailyMessageService.getDailyMessages(user);
 
             for (String message : todayMessages) {
-                sendMessageToTelegram(ToUserUtils.getTextMessage(subscriber.getUserID(), message));
+                sendMessageToTelegram(ToUserUtils.getTextMessage(user.getUserID(), message));
             }
         }
     }

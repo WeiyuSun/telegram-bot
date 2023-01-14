@@ -3,11 +3,11 @@ package com.weiyuproject.telegrambot.utils;
 public class TelegramCommands {
     private TelegramCommands() {
     }
-
-    public final static String SUBSCRIBE = "/subscribe";
     public final static String UNSUBSCRIBE = "/unsubscribe";
     public final static String START = "/start";
     public final static String HELP = "/help";
+
+    public final static String UPDATE_LOCATION = "/update_location";
     public final static String WEATHER = "/weather";
     public final static String MUTE_WEATHER = "/mute_weather";
     public final static String QUOTE = "/quote";
@@ -38,8 +38,7 @@ public class TelegramCommands {
     public final static String CALLBACK_DROP_ANNIVERSARY = "/16";
 
     public static Boolean isTextCommand(String text) {
-        return text.equals(SUBSCRIBE) || text.equals(UNSUBSCRIBE) || text.equals(START) || text.equals(HELP) || text.equals(WEATHER) || text.equals(MUTE_WEATHER) ||
-                text.equals(QUOTE) || text.equals(MUTE_QUOTE) || text.equals(NEWS) || text.equals(MUTE_NEWS) || text.equals(SCHEDULE);
+        return text.equals(UNSUBSCRIBE) || text.equals(START) || text.equals(HELP) || text.equals(WEATHER) || text.equals(MUTE_WEATHER) ||
+                text.equals(QUOTE) || text.equals(MUTE_QUOTE) || text.equals(SCHEDULE) || text.equals(DROP_SCHEDULE);
     }
-
 }

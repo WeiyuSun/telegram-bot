@@ -1,6 +1,5 @@
 package com.weiyuproject.telegrambot.utils;
 
-import org.checkerframework.checker.units.qual.K;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -10,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
+import java.security.Key;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,7 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ToUserUtils {
-    private ToUserUtils(){}
+    private ToUserUtils() {
+    }
+
     public static SendMessage getTextMessage(Long chatID, String message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatID);
@@ -26,29 +28,23 @@ public class ToUserUtils {
         return sendMessage;
     }
 
-    public static SendMessage getRequestLocationButtonMessage(Long chatID, String buttonContent, String textMessage) {
+    public static SendMessage getMenuButtonsMessage(Long chatID, String textMessage) {
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatID);
         sendMessage.setText(textMessage);
-
+        sendMessage.setChatId(chatID);
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setSelective(true);
 
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-        KeyboardRow keyboardRow = new KeyboardRow();
-        KeyboardButton keyboardButton = new KeyboardButton();
-        keyboardButton.setText(buttonContent);
-        keyboardButton.setRequestLocation(true);
-        keyboardRow.add(keyboardButton);
-        keyboardRows.add(keyboardRow);
-
-        replyKeyboardMarkup.setKeyboard(keyboardRows);
+        KeyboardRow menuRow1 = ToUserUtils.getKeyBoardRow(new KeyboardButton(TelegramCommands.HELP));
+        KeyboardRow menuRow2 = ToUserUtils.getKeyBoardRow(new KeyboardButton(TelegramCommands.UNSUBSCRIBE), new KeyboardButton(TelegramCommands.UPDATE_LOCATION, false, true, null, null));
+        KeyboardRow menuRow3 = ToUserUtils.getKeyBoardRow(TelegramCommands.MUTE_WEATHER, TelegramCommands.WEATHER);
+        KeyboardRow menuRow4 = ToUserUtils.getKeyBoardRow(TelegramCommands.MUTE_QUOTE, TelegramCommands.QUOTE);
+        KeyboardRow menuRow5 = ToUserUtils.getKeyBoardRow(TelegramCommands.DROP_SCHEDULE, TelegramCommands.SCHEDULE);
+        replyKeyboardMarkup.setKeyboard(ToUserUtils.getKeyboardRows(menuRow1, menuRow2, menuRow3, menuRow4, menuRow5));
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
     }
 
-    public static KeyboardRow getKeyBoardRow(KeyboardButton... buttons){
+    public static KeyboardRow getKeyBoardRow(KeyboardButton... buttons) {
         return new KeyboardRow(Arrays.stream(buttons).toList());
     }
 
@@ -62,11 +58,9 @@ public class ToUserUtils {
         return keyboardRow;
     }
 
-    public static List<KeyboardRow> getKeyboardRows(KeyboardRow... rows){
+    public static List<KeyboardRow> getKeyboardRows(KeyboardRow... rows) {
         return Arrays.stream(rows).toList();
     }
-
-
 
 
     public static List<List<InlineKeyboardButton>> inlineTimeKeyboardRows(int hour, int minute, String scheduleInfo) {
@@ -217,15 +211,15 @@ public class ToUserUtils {
         return getInlineButton("☁️", "/invalid");
     }
 
-    public static EditMessageText getEditMessageText(String text, Long chatID, Integer messageID, InlineKeyboardMarkup inlineKeyboardMarkup){
+    public static EditMessageText getEditMessageText(String text, Long chatID, Integer messageID, InlineKeyboardMarkup inlineKeyboardMarkup) {
         EditMessageText editMessageText = new EditMessageText(text);
         editMessageText.setMessageId(messageID);
         editMessageText.setChatId(chatID);
-        editMessageText.setReplyMarkup( inlineKeyboardMarkup);
+        editMessageText.setReplyMarkup(inlineKeyboardMarkup);
         return editMessageText;
     }
 
-    public static EditMessageReplyMarkup getEditMessageMarkup(Long chatID, Integer messageID, InlineKeyboardMarkup inlineKeyboardMarkup){
+    public static EditMessageReplyMarkup getEditMessageMarkup(Long chatID, Integer messageID, InlineKeyboardMarkup inlineKeyboardMarkup) {
         EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup();
         editMessageReplyMarkup.setChatId(chatID);
         editMessageReplyMarkup.setMessageId(messageID);

@@ -10,17 +10,16 @@ import com.weiyuproject.telegrambot.object.entity.WeeklyScheduleEntity;
 import com.weiyuproject.telegrambot.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ScheduleServiceImpl implements ScheduleService {
-    @Autowired
-    private AnniversaryDao anniversaryDao;
-    @Autowired
-    private OneTimeScheduleDao oneTimeScheduleDao;
-    @Autowired
-    private WeeklyScheduleDao weeklyScheduleDao;
+    @Autowired private AnniversaryDao anniversaryDao;
+    @Autowired private OneTimeScheduleDao oneTimeScheduleDao;
+    @Autowired private WeeklyScheduleDao weeklyScheduleDao;
 
     @Override
     public boolean addAnniversary(AnniversaryEntity anniversary) {
@@ -86,6 +85,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
+    @Transactional
     public List<ScheduleEntity> getAllSchedules(Long userID) {
         List<ScheduleEntity> allSchedules = new ArrayList<>();
         List<OneTimeScheduleEntity> oneTimeScheduleEntities = getOnetimeSchedules(userID);
@@ -99,5 +99,14 @@ public class ScheduleServiceImpl implements ScheduleService {
         allSchedules.addAll(anniversaryEntities);
 
         return allSchedules;
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteAllUserSchedule(Long userID){
+        oneTimeScheduleDao.removeAllByUserId(userID);
+        weeklyScheduleDao.removeAllByUserId(userID);
+        anniversaryDao.removeAllByUserId(userID);
+        return true;
     }
 }

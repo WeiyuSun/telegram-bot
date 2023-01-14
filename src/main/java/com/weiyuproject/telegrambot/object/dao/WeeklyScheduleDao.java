@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface WeeklyScheduleDao extends JpaRepository<WeeklyScheduleEntity, Long> {
     List<WeeklyScheduleEntity> getSchedulesByUserId(Long userID);
+    void removeAllByUserId(Long userID);
 }
