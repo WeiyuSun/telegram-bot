@@ -3,7 +3,7 @@ this is a telegram bot implement by java. The bot can send weather and user sche
 Come to chat with it: https://t.me/daily_robot
 
 ## Demonstration
-![](gif/RPReplay_Final1673728906.gif)
+![](gif/e77pu-1dgyb.gif)
 
 ## Technology stack
 |      Name       | Version  |                    website                    |
